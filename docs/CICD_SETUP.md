@@ -19,19 +19,19 @@ The following config files already exist in the repo. Your job is to wire them u
 
 ## Files already provided — DO NOT recreate, just use them
 
-| File                           | Purpose                                                |
-| ------------------------------ | ------------------------------------------------------ |
-| `.github/workflows/ci.yml`     | GitHub Actions pipeline                                |
-| `vitest.config.ts`             | Vitest + coverage config                               |
-| `src/tests/setup.ts`           | Test setup (mocks for Dexie, Supabase, Audio)          |
-| `src/tests/pomodoro.test.ts`   | Unit tests for split logic                             |
-| `src/tests/timerStore.test.ts` | Unit tests for timer store                             |
-| `.husky/pre-commit`            | Pre-commit hook (runs lint-staged)                     |
-| `.husky/commit-msg`            | Commit message hook (runs commitlint)                  |
-| `commitlint.config.js`         | Conventional commits config                            |
-| `eslint.config.js`             | ESLint flat config (TypeScript strict)                 |
-| `package.json`                 | Scripts (`prepare`, `lint`, `test`, …)                 |
-| `lint-staged.config.mjs`       | lint-staged tasks + `ignore` for `dist/` / `coverage/` |
+| File                           | Purpose                                               |
+| ------------------------------ | ----------------------------------------------------- |
+| `.github/workflows/ci.yml`     | GitHub Actions pipeline                               |
+| `vitest.config.ts`             | Vitest + coverage config                              |
+| `src/tests/setup.ts`           | Test setup (mocks for Dexie, Supabase, Audio)         |
+| `src/tests/pomodoro.test.ts`   | Unit tests for split logic                            |
+| `src/tests/timerStore.test.ts` | Unit tests for timer store                            |
+| `.husky/pre-commit`            | Pre-commit hook (runs lint-staged)                    |
+| `.husky/commit-msg`            | Commit message hook (runs commitlint)                 |
+| `commitlint.config.js`         | Conventional commits config                           |
+| `eslint.config.js`             | ESLint flat config (TypeScript strict)                |
+| `package.json`                 | Scripts (`prepare`, `lint`, `test`, …)                |
+| `lint-staged.config.mjs`       | lint-staged v15+ (globs → commands only; no `ignore`) |
 
 ---
 
@@ -51,9 +51,9 @@ pnpm add -D \
   prettier
 ```
 
-### Step 2 — Scripts in `package.json` and lint-staged
+### Step 2 — Scripts in `package.json` + `lint-staged.config.mjs`
 
-Add these keys to `package.json` (merge, do not replace the file). Use **`lint-staged.config.mjs`** at the repo root for lint-staged (includes `ignore: ['**/dist/**', '**/coverage/**']` so build output is not staged).
+Add scripts to `package.json`. Add **`lint-staged.config.mjs`** with only **glob → command** entries (lint-staged v15+ rejects a top-level `ignore` key).
 
 ```json
 {
@@ -71,6 +71,8 @@ Add these keys to `package.json` (merge, do not replace the file). Use **`lint-s
   }
 }
 ```
+
+`lint-staged.config.mjs`: copy from this repo (eslint + tsc on `*.{ts,tsx}`, prettier on json/md/yml).
 
 ### Step 3 — Initialize Husky
 
@@ -264,6 +266,9 @@ Dexie is mocked in `src/tests/setup.ts`. Make sure `vitest.config.ts` points `se
 
 **Cloudflare deploy failing?**
 Check that `CLOUDFLARE_API_TOKEN` has "Edit Cloudflare Pages" permissions and `CLOUDFLARE_ACCOUNT_ID` is correct.
+
+**`wrangler-action`: Unable to locate executable file: pnpm?**
+Deploy jobs must run `pnpm/action-setup` and `actions/setup-node` before `cloudflare/wrangler-action@v3` (the action installs Wrangler with the detected package manager; `pnpm` is not on the PATH by default on a fresh runner).
 
 **TypeScript errors in ESLint?**
 Make sure `parserOptions.project` in `eslint.config.js` points to your `tsconfig.json`.
