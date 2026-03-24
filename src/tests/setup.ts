@@ -7,7 +7,7 @@ afterEach(() => {
   cleanup()
 })
 
-// Mock IndexedDB (Dexie doesn't work in jsdom without this)
+// Mock IndexedDB
 vi.mock('@/db/schema', () => ({
   db: {
     projects: {
@@ -37,7 +37,7 @@ vi.mock('@/db/schema', () => ({
   },
 }))
 
-// Mock Supabase (optional — won't be initialized in tests)
+// Mock Supabase
 vi.mock('@/lib/supabase', () => ({
   supabase: null,
   isSupabaseEnabled: false,
@@ -61,7 +61,10 @@ global.AudioContext = vi.fn().mockImplementation(() => ({
 }))
 
 // Mock Notification API
-global.Notification = {
+const mockNotification = vi.fn()
+Object.assign(mockNotification, {
   permission: 'granted',
-  requestPermission: vi.fn().mockResolvedValue('granted'),
-} as unknown as typeof Notification
+  requestPermission: vi.fn().mockResolvedValue('granted')
+})
+
+global.Notification = mockNotification as any
