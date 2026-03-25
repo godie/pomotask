@@ -6,9 +6,10 @@ interface ProjectCardProps {
   project: Project
   onDelete: (id: string) => void
   onEdit: (project: Project) => void
+  taskCount: number
 }
 
-export function ProjectCard({ project, onDelete, onEdit }: ProjectCardProps) {
+export function ProjectCard({ project, onDelete, onEdit, taskCount }: ProjectCardProps) {
   return (
     <div className="bg-surface_container border border-outline/10 p-5 sm:p-6 rounded-2xl shadow-xl transition-all duration-300 hover:border-secondary/40 hover:shadow-secondary/5 group">
       <div className="flex justify-between items-start mb-6">
@@ -21,12 +22,14 @@ export function ProjectCard({ project, onDelete, onEdit }: ProjectCardProps) {
         <div className="flex gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
           <button
             onClick={() => { onEdit(project); }}
+            aria-label="Edit Project"
             className="p-2 rounded-lg bg-surface_variant text-on_surface_variant hover:text-secondary hover:bg-secondary/10 transition-colors"
           >
             <Edit size={16} />
           </button>
           <button
             onClick={() => { onDelete(project.id); }}
+            aria-label="Delete Project"
             className="p-2 rounded-lg bg-surface_variant text-on_surface_variant hover:text-error hover:bg-error/10 transition-colors"
           >
             <Trash2 size={16} />
@@ -40,7 +43,7 @@ export function ProjectCard({ project, onDelete, onEdit }: ProjectCardProps) {
       )}
 
       <div className="flex justify-between items-center pt-4 border-t border-outline/5 font-label text-xs uppercase tracking-widest text-on_surface_variant">
-        <span>0 Tasks</span>
+        <span>{taskCount} Tasks</span>
         <div className="flex items-center gap-1.5">
           <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: project.color }} />
           <span>Active</span>

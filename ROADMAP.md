@@ -99,7 +99,7 @@
 - [x] **2.5** 🔴🟢 Add test: `'creates a PomodoroSession record on focus complete'` → wire DB call
 - [x] **2.6** 🔴🟢 Add test: `'interval runs tick every second when running'` → implement `setInterval` (use `vi.useFakeTimers()`)
 - [x] **2.7** ♻️ Refactor store, run all tests → GREEN
-- [ ] **2.8** Create `src/hooks/useTimer.ts` — thin hook wrapping timerStore (no new tests needed, covered by store tests)
+- [x] **2.8** Create `src/hooks/useTimer.ts` — thin hook wrapping timerStore (no new tests needed, covered by store tests)
 
 **Commit**: `feat: Zustand timer store with state machine (TDD)`
 
@@ -112,18 +112,20 @@
 - [x] **3.1** Create `src/lib/queryKeys.ts` (no tests — pure constants)
 
 - [x] **3.2** 🔴🟢♻️ `src/hooks/useProjects.ts`
-  - 🔴 Write `src/tests/hooks/useProjects.test.ts`:
+  - 🔴 Write `src/tests/hooks/useProjects.test.tsx`:
     - `'useProjects returns all projects'`
     - `'useCreateProject calls createProject and invalidates cache'`
     - `'useDeleteProject removes project from cache optimistically'`
+    - `'useProject(id) fetches single project'`
   - 🟢 Implement hooks until GREEN
   - ♻️ Refactor
 
 - [x] **3.3** 🔴🟢♻️ `src/hooks/useTasks.ts`
-  - 🔴 Write `src/tests/hooks/useTasks.test.ts`:
+  - 🔴 Write `src/tests/hooks/useTasks.test.tsx`:
     - `'useTasksByProject filters tasks by projectId'`
     - `'useCreateTask triggers split dialog when estimate > 5'`
     - `'useCreateTask creates single task when estimate <= 5'`
+    - `'useTask(id) fetches single task'`
   - 🟢 Implement hooks until GREEN
   - ♻️ Refactor
 
@@ -158,7 +160,7 @@
 > 🔴🟢♻️ TDD: Test behavior and render output, not CSS classes.
 
 - [x] **5.1** 🔴🟢♻️ `TimerRing.tsx`
-  - 🔴 `'renders MM:SS format correctly'` / `'applies focus color in focus mode'` / `'applies break color in break mode'`
+  - 🔴 `'renders MM:SS format correctly'` / `'applies focus color in focus mode'` / `'applies break color in break mode'` / `'renders with correct strokeDashoffset'`
   - 🟢 SVG circular progress ring
   - ♻️ Animate with CSS
 
@@ -172,7 +174,7 @@
 
 - [x] **5.4** 🔴🟢♻️ Active task selector
   - 🔴 `'shows list of pending tasks'` / `'selecting task calls setActiveTask'` / `'shows active task name when set'`
-  - 🟢 Implement dropdown
+  - 🟢 Implement `TaskSelector.tsx` (extracted from index.tsx)
 
 - [x] **5.5** Wire `src/routes/index.tsx` — compose all timer components
 - [ ] **5.6** Browser notification on session end (test: `'requests notification permission on first start'`)
@@ -188,12 +190,12 @@
 > 🔴🟢♻️ TDD: use `@testing-library/react` + `userEvent` for all interactions.
 
 - [x] **6.1** 🔴🟢♻️ `ProjectCard.tsx`
-  - 🔴 `'renders project name'` / `'renders pomodoro stats est vs real'` / `'delete button calls onDelete'`
-  - 🟢 Implement card
+  - 🔴 `'renders project name'` / `'renders pomodoro stats est vs real'` / `'delete button calls onDelete'` / `'renders actual task count'`
+  - 🟢 Implement card with `taskCount` prop
 
 - [x] **6.2** 🔴🟢♻️ `ProjectForm.tsx`
-  - 🔴 `'submit is disabled when name is empty'` / `'calls onSubmit with form values'` / `'shows validation error on empty name'`
-  - 🟢 Implement TanStack Form
+  - 🔴 `'submit is disabled when name is empty'` / `'calls onSubmit with form values'` / `'shows validation error on empty name'` / `'validates name max length (60 chars)'`
+  - 🟢 Implement TanStack Form with Zod validation
 
 - [x] **6.3** 🔴🟢♻️ `ProjectStats.tsx`
   - 🔴 `'shows estimated and real pomodoro counts'` / `'shows 0/0 when no tasks'`
@@ -220,10 +222,10 @@
   - 🟢 Implement dialog (this is the most critical UI flow — cover all branches)
 
 - [x] **7.3** 🔴🟢♻️ `TaskForm.tsx`
-  - 🔴 `'shows split dialog when estimate > 5 on submit'` / `'does not show split dialog when estimate <= 5'` / `'project field is optional'`
-  - 🟢 Implement TanStack Form with split trigger
+  - 🔴 `'shows split dialog when estimate > 5 on submit'` / `'does not show split dialog when estimate <= 5'` / `'project field is optional'` / `'validates name max length (60 chars)'`
+  - 🟢 Implement TanStack Form with split trigger and Zod validation
 
-- [ ] **7.4** 🔴🟢♻️ `TaskList.tsx`
+- [x] **7.4** 🔴🟢♻️ `TaskList.tsx`
   - 🔴 `'groups tasks by status: in_progress first, then pending, then completed'` / `'filters by projectId when prop provided'`
   - 🟢 Implement
 
@@ -283,12 +285,12 @@
 | ----- | --------------------------------------------------- | ------ |
 | 0     | Project Setup                                       | ✅     |
 | 1     | Database Layer                                      | ✅     |
-| 2     | Timer Store                                         | 🟡     |
+| 2     | Timer Store                                         | ✅     |
 | 3     | Query Hooks                                         | ✅     |
 | 4     | Routing & Layout                                    | 🟡     |
-| 5     | Timer UI                                            | 🟡     |
+| 5     | Timer UI                                            | ✅     |
 | 6     | Projects UI                                         | 🟡     |
-| 7     | Tasks UI                                            | 🟡     |
+| 7     | Tasks UI                                            | ✅     |
 | 8     | Auth (optional)                                     | 🟡     |
 | 9     | PWA & Polish                                        | 🟡     |
 | 10    | Deploy (Cloudflare Pages; see `docs/CICD_SETUP.md`) | ⬜     |
