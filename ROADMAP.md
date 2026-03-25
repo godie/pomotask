@@ -267,11 +267,11 @@
 
 ## Phase 10 — Deploy
 
-- [ ] **10.1** Connect repo to Cloudflare Pages (or keep GitHub Actions deploy from `.github/workflows/ci.yml`)
-- [ ] **10.2** Add env vars in Cloudflare (and GitHub Actions secrets for CI): Supabase keys, `CLOUDFLARE_*`
+- [x] **10.1** Connect repo to Cloudflare Pages (or keep GitHub Actions deploy from `.github/workflows/ci.yml`)
+- [x] **10.2** Add env vars in Cloudflare (and GitHub Actions secrets for CI): Supabase keys, `CLOUDFLARE_*`
 - [ ] **10.3** Configure SPA fallback (`/* → index.html`)
 - [ ] **10.4** Deploy and smoke test production build
-- [ ] **10.5** Update `README.md` with live URL
+- [x] **10.5** Update `README.md` with live URL
 
 **Commit**: `chore: deploy to cloudflare pages`
 
