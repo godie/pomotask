@@ -100,16 +100,18 @@ Action Plan:
 
 ### Task 2.8 — `src/hooks/useTimer.ts`
 
-**Status: [ ]**
+**Status: [x]**
 
-Issues:
+Findings:
 
-- Hook specified in roadmap but does NOT EXIST
+- ✅ Hook created as thin wrapper around timerStore
+- ✅ 8 tests added covering all timer actions
+- ✅ Proper TypeScript types
 
 Action Plan:
 
-- [ ] Create `src/hooks/useTimer.ts` as thin wrapper around timerStore
-- [ ] No new tests needed (covered by store tests)
+- [x] Create `src/hooks/useTimer.ts` as thin wrapper around timerStore
+- [x] Add tests for hook functionality
 
 ---
 
@@ -128,34 +130,37 @@ Findings:
 
 ### Task 3.2 — `src/hooks/useProjects.ts`
 
-**Status: [~]**
+**Status: [x]**
 
-Issues:
+Findings:
 
-- Missing: useProject(id), useUpdateProject
-- Only 1 test exists
+- ✅ useProject(id) hook added with proper query key
+- ✅ useUpdateProject mutation added with cache invalidation
+- ✅ 4 tests added covering all hooks
+- ✅ Proper TypeScript types
 
 Action Plan:
 
-- [ ] Add `useProject(id)` hook
-- [ ] Add `useUpdateProject` mutation
-- [ ] Add tests for all 5 hooks
+- [x] Add `useProject(id)` hook
+- [x] Add `useUpdateProject` mutation
+- [x] Add tests for all hooks
 
 ---
 
 ### Task 3.3 — `src/hooks/useTasks.ts`
 
-**Status: [~]**
+**Status: [x]**
 
-Issues:
+Findings:
 
-- Missing: useTask(id)
-- Only 2 tests exist
+- ✅ useTask(id) hook added with proper query key
+- ✅ 4 tests added covering all hooks
+- ✅ Proper TypeScript types
 
 Action Plan:
 
-- [ ] Add `useTask(id)` hook
-- [ ] Add comprehensive tests for all hooks
+- [x] Add `useTask(id)` hook
+- [x] Add comprehensive tests for all hooks
 
 ---
 
@@ -237,22 +242,26 @@ Action Plan:
 
 ### Task 5.2 — `TimerControls.tsx`
 
-**Status: [~]**
+**Status: [x]**
 
-Issues:
+Findings:
 
-- NO TESTS EXIST
+- ✅ 11 tests added covering all button states and actions
+- ✅ Tests verify Start/Pause/Resume buttons based on status
+- ✅ Tests verify Reset and Skip buttons
+- ✅ Tests verify correct handlers are called
+- ✅ Accessibility labels added to buttons
 
 Action Plan:
 
-- [ ] Add test: `renders Play button when status is idle`
-- [ ] Add test: `renders Pause button when status is running`
-- [ ] Add test: `renders Play button when status is paused`
-- [ ] Add test: `calls start when Play clicked`
-- [ ] Add test: `calls pause when Pause clicked`
-- [ ] Add test: `calls resume when Play clicked while paused`
-- [ ] Add test: `calls reset when Reset clicked`
-- [ ] Add test: `calls skip when Skip clicked`
+- [x] Add test: `renders Start button when status is idle`
+- [x] Add test: `renders Pause button when status is running`
+- [x] Add test: `renders Resume button when status is paused`
+- [x] Add test: `calls start when Start clicked`
+- [x] Add test: `calls pause when Pause clicked`
+- [x] Add test: `calls resume when Resume clicked`
+- [x] Add test: `calls reset when Reset clicked`
+- [x] Add test: `calls skip when Skip clicked`
 
 ---
 
@@ -433,18 +442,21 @@ Action Plan:
 
 ### Task 7.4 — `TaskList.tsx`
 
-**Status: [ ]**
+**Status: [x]**
 
-Issues:
+Findings:
 
-- DOES NOT EXIST — Tasks rendered inline in routes/tasks.tsx
-- Makes testing harder and reduces reusability
+- ✅ Component created at `src/components/tasks/TaskList.tsx`
+- ✅ Groups tasks by status: in_progress first, then pending, then completed
+- ✅ Filters by projectId when prop provided
+- ✅ 5 tests added covering all functionality
+- ✅ Empty state handling
 
 Action Plan:
 
-- [ ] Create `src/components/tasks/TaskList.tsx`
-- [ ] Add test: `groups tasks by status: in_progress first, then pending, then completed`
-- [ ] Add test: `filters by projectId when prop provided`
+- [x] Create `src/components/tasks/TaskList.tsx`
+- [x] Add test: `groups tasks by status: in_progress first, then pending, then completed`
+- [x] Add test: `filters by projectId when prop provided`
 
 ---
 

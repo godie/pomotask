@@ -1,28 +1,34 @@
-
-import { useTimerStore } from '@/stores/timerStore'
-import { Play, Pause, RotateCcw, SkipForward } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { useTimerStore } from "@/stores/timerStore";
+import { Play, Pause, RotateCcw, SkipForward } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export function TimerControls() {
-  const { status, mode, start, pause, resume, reset, skip } = useTimerStore()
+  const { status, mode, start, pause, resume, reset, skip } = useTimerStore();
 
-  const isRunning = status === 'running'
-  const isPaused = status === 'paused'
-  const isIdle = status === 'idle'
+  const isRunning = status === "running";
+  const isPaused = status === "paused";
+  const isIdle = status === "idle";
 
-  const buttonBase = "p-3 sm:p-4 rounded-full transition-all duration-300 transform active:scale-95 shadow-lg border-2"
+  const buttonBase =
+    "p-3 sm:p-4 rounded-full transition-all duration-300 transform active:scale-95 shadow-lg border-2";
 
   const colors = {
-    focus: 'border-primary/50 text-primary hover:bg-primary/10 shadow-primary/20',
-    short_break: 'border-secondary/50 text-secondary hover:bg-secondary/10 shadow-secondary/20',
-    long_break: 'border-tertiary/50 text-tertiary hover:bg-tertiary/10 shadow-tertiary/20',
-  }
+    focus:
+      "border-primary/50 text-primary hover:bg-primary/10 shadow-primary/20",
+    short_break:
+      "border-secondary/50 text-secondary hover:bg-secondary/10 shadow-secondary/20",
+    long_break:
+      "border-tertiary/50 text-tertiary hover:bg-tertiary/10 shadow-tertiary/20",
+  };
 
   return (
     <div className="flex gap-4 sm:gap-6 items-center">
       <button
         onClick={reset}
-        className={cn(buttonBase, "border-outline/30 text-outline hover:bg-surface_variant")}
+        className={cn(
+          buttonBase,
+          "border-outline/30 text-outline hover:bg-surface_variant",
+        )}
         title="Reset"
       >
         <RotateCcw size={20} className="sm:w-6 sm:h-6" />
@@ -32,6 +38,7 @@ export function TimerControls() {
         <button
           onClick={start}
           className={cn(buttonBase, colors[mode], "bg-surface")}
+          aria-label="Start timer"
         >
           <Play size={28} className="sm:w-8 sm:h-8" fill="currentColor" />
         </button>
@@ -41,6 +48,7 @@ export function TimerControls() {
         <button
           onClick={pause}
           className={cn(buttonBase, colors[mode], "bg-surface")}
+          aria-label="Pause timer"
         >
           <Pause size={28} className="sm:w-8 sm:h-8" fill="currentColor" />
         </button>
@@ -50,6 +58,7 @@ export function TimerControls() {
         <button
           onClick={resume}
           className={cn(buttonBase, colors[mode], "bg-surface animate-pulse")}
+          aria-label="Resume timer"
         >
           <Play size={28} className="sm:w-8 sm:h-8" fill="currentColor" />
         </button>
@@ -57,11 +66,14 @@ export function TimerControls() {
 
       <button
         onClick={skip}
-        className={cn(buttonBase, "border-outline/30 text-outline hover:bg-surface_variant")}
+        className={cn(
+          buttonBase,
+          "border-outline/30 text-outline hover:bg-surface_variant",
+        )}
         title="Skip"
       >
         <SkipForward size={20} className="sm:w-6 sm:h-6" />
       </button>
     </div>
-  )
+  );
 }
