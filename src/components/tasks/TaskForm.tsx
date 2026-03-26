@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
+import { zodValidator } from '@tanstack/zod-form-adapter'
+import { z } from 'zod'
 import {
   DialogContent,
   DialogHeader,
@@ -7,6 +9,8 @@ import {
   DialogFooter,
   DialogDescription,
   Dialog,
+  DialogPortal,
+  DialogOverlay,
 } from "@/components/ui/Dialog";
 import { cn } from "@/lib/utils";
 import { useProjects } from "@/hooks/useProjects";
@@ -27,6 +31,12 @@ interface TaskFormProps {
   title: string;
 }
 
+const taskSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(60, 'Name must be 60 characters or less'),
+  projectId: z.string().nullable(),
+  estimatedPomodoros: z.number().min(1).max(10),
+})
+
 export function TaskForm({
   onSubmit,
   onCancel,
@@ -43,6 +53,10 @@ export function TaskForm({
       projectId: null as string | null,
       estimatedPomodoros: 1,
     },
+    /* eslint-disable @typescript-eslint/no-deprecated */
+    // @ts-expect-error - TanStack Form version mismatch
+    validatorAdapter: zodValidator(),
+    /* eslint-enable @typescript-eslint/no-deprecated */
     onSubmit: async ({ value }) => {
       const taskData = {
         ...value,
@@ -79,6 +93,9 @@ export function TaskForm({
         >
           <form.Field
             name="name"
+            validators={{
+              onChange: taskSchema.shape.name,
+            }}
             children={(field) => (
               <div className="space-y-2">
                 <label
@@ -95,12 +112,21 @@ export function TaskForm({
                   onChange={(e) => {
                     field.handleChange(e.target.value);
                   }}
-                  required
                   className={cn(
                     "w-full bg-surface_variant border-b-2 border-outline/20 p-3 outline-none transition-all focus:border-tertiary font-headline",
+                    field.state.meta.errors.length > 0 && "border-error"
                   )}
                   placeholder="Launch rocket..."
                 />
+                {field.state.meta.errors.length > 0 && (
+                  <p className="text-xs text-error">
+                    {field.state.meta.errors.map((err) => {
+                      if (typeof err === 'string') return err
+                      if (err && typeof err === 'object' && 'message' in err) return err.message
+                      return JSON.stringify(err)
+                    }).join(', ')}
+                  </p>
+                )}
               </div>
             )}
           />
@@ -147,7 +173,7 @@ export function TaskForm({
                   <span
                     className={cn(
                       "font-headline font-bold text-lg",
-                      field.state.value > 5 ? "text-primary" : "text-tertiary",
+                      field.state.value > 5 ? "text-error" : "text-tertiary",
                     )}
                   >
                     {field.state.value} 🍅
@@ -198,20 +224,23 @@ export function TaskForm({
           setTaskToSplit(null);
         }}
       >
-        {taskToSplit && (
-          <TaskSplitDialog
-            task={taskToSplit}
-            onConfirm={async () => {
-              await splitTask(taskToSplit.id);
-              setTaskToSplit(null);
-              onCancel();
-            }}
-            onCancel={() => {
-              setTaskToSplit(null);
-              onCancel();
-            }}
-          />
-        )}
+        <DialogPortal>
+          <DialogOverlay />
+          {taskToSplit && (
+            <TaskSplitDialog
+              task={taskToSplit}
+              onConfirm={async () => {
+                await splitTask(taskToSplit.id);
+                setTaskToSplit(null);
+                onCancel();
+              }}
+              onCancel={() => {
+                setTaskToSplit(null);
+                onCancel();
+              }}
+            />
+          )}
+        </DialogPortal>
       </Dialog>
     </>
   );

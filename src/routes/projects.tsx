@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useProjects, useCreateProject, useDeleteProject } from '@/hooks/useProjects'
+import { useAllTasks } from '@/hooks/useTasks'
 import { ProjectCard } from '@/components/projects/ProjectCard'
 import { ProjectForm } from '@/components/projects/ProjectForm'
 import { Dialog, DialogTrigger } from '@/components/ui/Dialog'
@@ -8,12 +9,13 @@ import { Plus } from 'lucide-react'
 import { Skeleton } from '@/components/ui/Skeleton'
 
 function ProjectsPage() {
-    const { data: projects, isLoading } = useProjects()
+    const { data: projects, isLoading: projectsLoading } = useProjects()
+    const { data: tasks, isLoading: tasksLoading } = useAllTasks()
     const { mutateAsync: createProject } = useCreateProject()
     const { mutateAsync: deleteProject } = useDeleteProject()
     const [isCreateOpen, setIsCreateOpen] = useState(false)
 
-    if (isLoading) return (
+    if (projectsLoading || tasksLoading) return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {[1,2,3].map(i => <Skeleton key={i} className="h-48 rounded-2xl" />)}
       </div>
@@ -57,14 +59,18 @@ function ProjectsPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {projects?.map((project) => (
-              <ProjectCard
-                key={project.id}
-                project={project}
-                onDelete={deleteProject}
-                onEdit={() => {}}
-              />
-            ))}
+            {projects?.map((project) => {
+              const projectTasks = tasks?.filter(t => t.projectId === project.id) || []
+              return (
+                <ProjectCard
+                  key={project.id}
+                  project={project}
+                  onDelete={deleteProject}
+                  onEdit={() => {}}
+                  taskCount={projectTasks.length}
+                />
+              )
+            })}
           </div>
         )}
       </div>

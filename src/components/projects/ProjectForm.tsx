@@ -1,4 +1,6 @@
 import { useForm } from '@tanstack/react-form'
+import { zodValidator } from '@tanstack/zod-form-adapter'
+import { z } from 'zod'
 import { DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/Dialog'
 import { cn } from '@/lib/utils'
 import type { Project } from '@/types'
@@ -10,6 +12,12 @@ interface ProjectFormProps {
   title: string
 }
 
+const projectSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(60, 'Name must be 60 characters or less'),
+  color: z.string(),
+  description: z.string().optional(),
+})
+
 export function ProjectForm({ onSubmit, onCancel, initialData, title }: ProjectFormProps) {
   const form = useForm({
     defaultValues: initialData || {
@@ -17,6 +25,10 @@ export function ProjectForm({ onSubmit, onCancel, initialData, title }: ProjectF
       color: '#ff2d78',
       description: '',
     },
+    /* eslint-disable @typescript-eslint/no-deprecated */
+    // @ts-expect-error - TanStack Form version mismatch
+    validatorAdapter: zodValidator(),
+    /* eslint-enable @typescript-eslint/no-deprecated */
     onSubmit: async ({ value }) => {
       await onSubmit(value)
     },
@@ -38,6 +50,9 @@ export function ProjectForm({ onSubmit, onCancel, initialData, title }: ProjectF
       >
         <form.Field
           name="name"
+          validators={{
+            onChange: projectSchema.shape.name,
+          }}
           children={(field) => (
             <div className="space-y-2">
               <label htmlFor={field.name} className="font-label text-xs uppercase tracking-wider text-on_surface_variant">
@@ -49,12 +64,21 @@ export function ProjectForm({ onSubmit, onCancel, initialData, title }: ProjectF
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={(e) => { field.handleChange(e.target.value); }}
-                required
                 className={cn(
                   "w-full bg-surface_variant border-b-2 border-outline/20 p-3 outline-none transition-all focus:border-primary font-headline",
+                  field.state.meta.errors.length > 0 && "border-error"
                 )}
                 placeholder="Marketing Strategy..."
               />
+              {field.state.meta.errors.length > 0 && (
+                <p className="text-xs text-error">
+                  {field.state.meta.errors.map((err) => {
+                    if (typeof err === 'string') return err
+                    if (err && typeof err === 'object' && 'message' in err) return err.message
+                    return JSON.stringify(err)
+                  }).join(', ')}
+                </p>
+              )}
             </div>
           )}
         />
