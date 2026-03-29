@@ -33,8 +33,8 @@ export const createTask = mutation({
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)/g, "");
 
-    // Satisfy lint by ensuring operands are strings without redundant String() call
-    const branchName = (slug as string) + "-" + (taskId as unknown as string);
+    // Explicit string conversion with template literal to handle the 'any' from missing types while satisfying restrict-template-expressions
+    const branchName = `${slug as string}-${taskId as unknown as string}`;
 
     await ctx.db.patch(taskId, { branchName });
 
@@ -142,8 +142,10 @@ export const failTask = mutation({
       timestamp: Date.now(),
     });
 
-    const newRetryCount = (task.retryCount as number) + 1;
-    const shouldFail = newRetryCount >= (task.maxRetries as number);
+    const currentRetryCount = task.retryCount as number;
+    const maxRetriesAllowed = task.maxRetries as number;
+    const newRetryCount = currentRetryCount + 1;
+    const shouldFail = newRetryCount >= maxRetriesAllowed;
 
     await ctx.db.patch(args.taskId, {
       status: shouldFail ? "failed" : "pending",
