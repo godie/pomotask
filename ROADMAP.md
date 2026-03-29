@@ -36,7 +36,7 @@
   ```bash
   pnpm add @tanstack/react-router @tanstack/react-query @tanstack/react-form @tanstack/react-table
   pnpm add dexie zustand
-  pnpm add @supabase/supabase-js
+  pnpm add convex
   pnpm add lucide-react
   pnpm add -D tailwindcss @tailwindcss/vite
   pnpm dlx shadcn@latest init
@@ -46,7 +46,7 @@
 - [x] **0.5** Set up Tailwind CSS v4 with Vite plugin
 - [x] **0.6** Create folder structure as defined in `SPECS.md`
 - [x] **0.7** Create `src/types/index.ts` with all TypeScript types from SPECS
-- [x] **0.8** Create `.env.example` with Supabase vars
+- [x] **0.8** Create `.env.example` with Convex vars
 - [x] **0.9** Create `README.md` (already exists — copy to project root)
 - [x] **0.10** Add PWA manifest (`public/manifest.json`) and placeholder icons
 
@@ -235,17 +235,17 @@
 
 ---
 
-## Phase 8 — Optional Auth
+## Phase 8 — Cloud Sync (Convex)
 
-- [x] **8.1** Create `src/lib/supabase.ts` — lazy Supabase client (only init if env vars present)
-- [x] **8.2** Create Supabase tables (migration SQL) mirroring TypeScript types
-- [x] **8.3** Add RLS policies: `user_id = auth.uid()` on all tables
-- [x] **8.4** Create sign-in UI (email magic link or Google OAuth)
-- [x] **8.5** On sign-in: sync local IndexedDB data up to Supabase
-- [x] **8.6** Implement `src/db/sync.ts` dual-write logic
-- [x] **8.7** Add user avatar / sign-out in nav bar when logged in
+- [x] **8.1** Create `src/lib/convex.ts` — Convex client initialization
+- [x] **8.2** Create Convex schema (`convex/schema.ts`) mirroring TypeScript types
+- [x] **8.3** Implement Convex mutations and queries for projects and tasks
+- [ ] **8.4** Implement Convex Auth (planned for future phase)
+- [ ] **8.5** Implement sync logic between IndexedDB and Convex
+- [ ] **8.6** Implement Convex watchdog and crons
+- [ ] **8.7** Integrate ConvexProvider in frontend
 
-**Commit**: `feat: optional Supabase auth and sync`
+**Commit**: `feat: Convex backend integration`
 
 ---
 
@@ -270,7 +270,7 @@
 ## Phase 10 — Deploy
 
 - [x] **10.1** Connect repo to Cloudflare Pages (or keep GitHub Actions deploy from `.github/workflows/ci.yml`)
-- [x] **10.2** Add env vars in Cloudflare (and GitHub Actions secrets for CI): Supabase keys, `CLOUDFLARE_*`
+- [x] **10.2** Add env vars in Cloudflare: `VITE_CONVEX_URL`, `CONVEX_DEPLOY_KEY`
 - [x] **10.3** Configure SPA fallback (`/* → index.html`)
 - [x] **10.4** Deploy and smoke test production build
 - [x] **10.5** Update `README.md` with live URL
@@ -291,7 +291,7 @@
 | 5     | Timer UI                                            | ✅     |
 | 6     | Projects UI                                         | ✅     |
 | 7     | Tasks UI                                            | ✅     |
-| 8     | Auth (optional)                                     | ✅     |
+| 8     | Cloud Sync (Convex)                                 | 🟡     |
 | 9     | PWA & Polish                                        | ✅     |
 | 10    | Deploy (Cloudflare Pages; see `docs/CICD_SETUP.md`) | ✅     |
 

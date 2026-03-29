@@ -13,7 +13,7 @@
 - Incluir tablas: users, projects, agents, tasks, taskLogs, taskComments.
 - Ejecutar npx convex codegen tras guardar schema.ts.
 
-## Tarea 3: Crear auth.config.ts
+## [x] Tarea 3: Crear auth.config.ts
 
 - Crear convex/auth.config.ts con:
   export default { providers: [] };
