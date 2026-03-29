@@ -91,7 +91,7 @@ Findings:
 
 Issues:
 
-- Tests use fake timers — need real browser verification
+- Tests use fake timers — need real browser verification (RESOLVED via Playwright)
 
 Action Plan:
 
@@ -288,12 +288,13 @@ Action Plan:
 
 Issues:
 
-- NOT A SEPARATE COMPONENT — Inline in index.tsx
-- NO TESTS
+- NOT A SEPARATE COMPONENT — Inline in index.tsx (FIXED)
+- NO TESTS (FIXED)
 
 Action Plan:
 
 - [x] Extract to separate component `TaskSelector.tsx`
+- [x] Integrate `TaskSelector` into `src/routes/index.tsx`
 - [x] Add test: `shows list of pending tasks`
 - [x] Add test: `selecting task calls setActiveTask`
 - [x] Add test: `shows active task name when set`
@@ -465,10 +466,13 @@ Findings:
 - ✅ Filters by projectId when prop provided
 - ✅ 5 tests added covering all functionality
 - ✅ Empty state handling
+- ✅ Integrated in `tasks.tsx` and `projects/$projectId.tsx`
 
 Action Plan:
 
 - [x] Create `src/components/tasks/TaskList.tsx`
+- [x] Integrate `TaskList` into `src/routes/tasks.tsx`
+- [x] Integrate `TaskList` into `src/routes/projects/$projectId.tsx`
 - [x] Add test: `groups tasks by status: in_progress first, then pending, then completed`
 - [x] Add test: `filters by projectId when prop provided`
 
