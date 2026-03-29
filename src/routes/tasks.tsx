@@ -5,7 +5,7 @@ import {
   useDeleteTask,
   useUpdateTask,
 } from "@/hooks/useTasks";
-import { TaskCard } from "@/components/tasks/TaskCard";
+import { TaskList } from "@/components/tasks/TaskList";
 import { TaskForm } from "@/components/tasks/TaskForm";
 import { Dialog, DialogTrigger } from "@/components/ui/Dialog";
 import { useState } from "react";
@@ -30,9 +30,6 @@ function TasksPage() {
         ))}
       </div>
     );
-
-  const pendingTasks = tasks?.filter((t) => t.status === "pending") || [];
-  const completedTasks = tasks?.filter((t) => t.status === "completed") || [];
 
   return (
     <div className="animate-in fade-in duration-500">
@@ -66,63 +63,19 @@ function TasksPage() {
         </Dialog>
       </div>
 
-      <div className="space-y-8 sm:space-y-12">
-        {pendingTasks.length > 0 && (
-          <section>
-            <h2 className="font-label text-xs uppercase tracking-[0.2em] text-on_surface_variant mb-4 flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-tertiary" />
-              Pending ({pendingTasks.length})
-            </h2>
-            <div className="flex flex-col gap-3">
-              {pendingTasks.map((task) => (
-                <TaskCard
-                  key={task.id}
-                  task={task}
-                  onDelete={deleteTask}
-                  onToggleComplete={() =>
-                    updateTask({
-                      id: task.id,
-                      data: { status: "completed", completedAt: Date.now() },
-                    })
-                  }
-                />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {completedTasks.length > 0 && (
-          <section>
-            <h2 className="font-label text-xs uppercase tracking-[0.2em] text-on_surface_variant mb-4 flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-surface_variant" />
-              Completed ({completedTasks.length})
-            </h2>
-            <div className="flex flex-col gap-3">
-              {completedTasks.map((task) => (
-                <TaskCard
-                  key={task.id}
-                  task={task}
-                  onDelete={deleteTask}
-                  onToggleComplete={() =>
-                    updateTask({ id: task.id, data: { status: "pending" } })
-                  }
-                />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {tasks?.length === 0 && (
-          <div className="text-center py-20 border-2 border-dashed border-outline/10 rounded-3xl bg-surface_container/30">
-            <h3 className="text-xl font-headline font-bold mb-2 text-on_surface_variant">
-              Empty focus
-            </h3>
-            <p className="text-sm text-on_surface_variant/60">
-              Your todo list is currently clear.
-            </p>
-          </div>
-        )}
-      </div>
+      <TaskList
+        tasks={tasks || []}
+        onDelete={deleteTask}
+        onToggleComplete={(task) =>
+          updateTask({
+            id: task.id,
+            data: {
+              status: task.status === "completed" ? "pending" : "completed",
+              completedAt: task.status === "completed" ? undefined : Date.now(),
+            },
+          })
+        }
+      />
     </div>
   );
 }
