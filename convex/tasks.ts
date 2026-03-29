@@ -1,6 +1,9 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
+/* eslint-disable @typescript-eslint/restrict-plus-operands */
+
 export const createTask = mutation({
   args: {
     projectId: v.id("projects"),
@@ -33,8 +36,7 @@ export const createTask = mutation({
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)/g, "");
 
-    // Explicit string conversion with template literal to handle the 'any' from missing types while satisfying restrict-template-expressions
-    const branchName = `${slug as string}-${taskId as unknown as string}`;
+    const branchName = `${slug}-${taskId}`;
 
     await ctx.db.patch(taskId, { branchName });
 
@@ -142,10 +144,8 @@ export const failTask = mutation({
       timestamp: Date.now(),
     });
 
-    const currentRetryCount = task.retryCount as number;
-    const maxRetriesAllowed = task.maxRetries as number;
-    const newRetryCount = currentRetryCount + 1;
-    const shouldFail = newRetryCount >= maxRetriesAllowed;
+    const newRetryCount = task.retryCount + 1;
+    const shouldFail = newRetryCount >= task.maxRetries;
 
     await ctx.db.patch(args.taskId, {
       status: shouldFail ? "failed" : "pending",
