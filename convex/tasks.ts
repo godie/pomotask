@@ -1,8 +1,24 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
-/* eslint-disable @typescript-eslint/restrict-template-expressions */
-/* eslint-disable @typescript-eslint/restrict-plus-operands */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+interface Task {
+  _id: string;
+  projectId: string;
+  ownerUserId: string;
+  title: string;
+  description?: string;
+  type: string;
+  status: string;
+  retryCount: number;
+  maxRetries: number;
+  claimedBy?: string;
+}
+
+interface Project {
+  baseBranch?: string;
+}
 
 export const createTask = mutation({
   args: {
@@ -12,8 +28,8 @@ export const createTask = mutation({
     description: v.optional(v.string()),
     type: v.string(),
   },
-  handler: async (ctx: any, args: any) => {
-    const project = await ctx.db.get(args.projectId);
+  handler: async (ctx: any, args: any): Promise<string> => {
+    const project = await ctx.db.get(args.projectId) as Project | null;
     if (!project) throw new Error("Project not found");
 
     const taskId = await ctx.db.insert("tasks", {
@@ -31,12 +47,12 @@ export const createTask = mutation({
       baseBranch: project.baseBranch,
     });
 
-    const slug = args.title
+    const slug = (args.title as string)
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)/g, "");
 
-    const branchName = `${slug}-${taskId}`;
+    const branchName = slug + "-" + (taskId as string);
 
     await ctx.db.patch(taskId, { branchName });
 
@@ -49,14 +65,14 @@ export const claimTask = mutation({
     agentId: v.id("agents"),
     type: v.string(),
   },
-  handler: async (ctx: any, args: any) => {
+  handler: async (ctx: any, args: any): Promise<Task | null> => {
     const task = await ctx.db
       .query("tasks")
       .withIndex("by_status_type", (q: any) =>
         q.eq("status", "pending").eq("type", args.type)
       )
       .filter((q: any) => q.eq(q.field("waitingForClarification"), false))
-      .first();
+      .first() as Task | null;
 
     if (!task) return null;
 
@@ -66,7 +82,7 @@ export const claimTask = mutation({
       startedAt: Date.now(),
     });
 
-    return await ctx.db.get(task._id);
+    return await ctx.db.get(task._id) as Task | null;
   },
 });
 
@@ -77,7 +93,7 @@ export const reportProgress = mutation({
     message: v.string(),
     level: v.union(v.literal("info"), v.literal("warn"), v.literal("error")),
   },
-  handler: async (ctx: any, args: any) => {
+  handler: async (ctx: any, args: any): Promise<void> => {
     await ctx.db.insert("taskLogs", {
       taskId: args.taskId,
       agentId: args.agentId,
@@ -97,8 +113,8 @@ export const completeTask = mutation({
     resultType: v.optional(v.string()),
     resultPayload: v.optional(v.string()),
   },
-  handler: async (ctx: any, args: any) => {
-    const task = await ctx.db.get(args.taskId);
+  handler: async (ctx: any, args: any): Promise<void> => {
+    const task = await ctx.db.get(args.taskId) as Task | null;
     if (!task) throw new Error("Task not found");
     if (task.claimedBy !== args.agentId) {
       throw new Error("Agent not authorized for this task");
@@ -129,8 +145,8 @@ export const failTask = mutation({
     agentId: v.id("agents"),
     reason: v.string(),
   },
-  handler: async (ctx: any, args: any) => {
-    const task = await ctx.db.get(args.taskId);
+  handler: async (ctx: any, args: any): Promise<void> => {
+    const task = await ctx.db.get(args.taskId) as Task | null;
     if (!task) throw new Error("Task not found");
     if (task.claimedBy !== args.agentId) {
       throw new Error("Agent not authorized for this task");
@@ -158,27 +174,27 @@ export const failTask = mutation({
 
 export const listByProject = query({
   args: { projectId: v.id("projects") },
-  handler: async (ctx: any, args: any) => {
+  handler: async (ctx: any, args: any): Promise<Task[]> => {
     return await ctx.db
       .query("tasks")
       .filter((q: any) => q.eq(q.field("projectId"), args.projectId))
-      .collect();
+      .collect() as Task[];
   },
 });
 
 export const listByStatus = query({
   args: { status: v.string() },
-  handler: async (ctx: any, args: any) => {
+  handler: async (ctx: any, args: any): Promise<Task[]> => {
     return await ctx.db
       .query("tasks")
       .filter((q: any) => q.eq(q.field("status"), args.status))
-      .collect();
+      .collect() as Task[];
   },
 });
 
 export const getTask = query({
   args: { taskId: v.id("tasks") },
-  handler: async (ctx: any, args: any) => {
-    return await ctx.db.get(args.taskId);
+  handler: async (ctx: any, args: any): Promise<Task | null> => {
+    return await ctx.db.get(args.taskId) as Task | null;
   },
 });
