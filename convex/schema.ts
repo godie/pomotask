@@ -1,7 +1,9 @@
 import { defineSchema, defineTable } from "convex/server";
+import { authTables } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 
 export default defineSchema({
+  ...authTables,
   users: defineTable({
     name: v.string(),
     email: v.string(),
@@ -25,12 +27,12 @@ export default defineSchema({
 
   tasks: defineTable({
     projectId: v.id("projects"),
-    ownerUserId: v.id("users"),
+    ownerUserId: v.optional(v.id("users")),
     title: v.string(),
     description: v.optional(v.string()),
     type: v.string(),
     status: v.string(), // "pending", "in_progress", "completed", "failed"
-    createdBy: v.id("users"),
+    createdBy: v.optional(v.id("users")),
     claimedBy: v.optional(v.id("agents")),
     parentTaskId: v.optional(v.id("tasks")),
     branchName: v.optional(v.string()),

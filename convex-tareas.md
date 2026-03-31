@@ -66,7 +66,7 @@
   - Resetear a pending o marcar failed si retryCount >= maxRetries.
 - En convex/crons.ts: registrar resetStuckTasks cada 10 minutos.
 
-## Tarea 8: Integrar Convex en el frontend
+## [x] Tarea 8: Integrar Convex en el frontend
 
 - Crear src/lib/convex.ts:
   import { ConvexReactClient } from "convex/react";
@@ -76,7 +76,7 @@
   - Envolver <App /> con <ConvexProvider client={convex}>.
 - No modificar otros componentes.
 
-## Tarea 9: Actualizar variables de entorno
+## [x] Tarea 9: Actualizar variables de entorno
 
 - Añadir a .env.example:
   VITE_CONVEX_URL=https://<tu-deployment>.convex.cloud
@@ -90,12 +90,12 @@
 - Verificar que pnpm build pasa sin errores.
 - Verificar que el deploy en Cloudflare Pages sigue funcionando.
 
-## Tarea 11: Documentar cambios
+## [x] Tarea 11: Documentar cambios
 
 - Actualizar contexto-convex.md si algo cambió.
 - Actualizar .env.example con todas las variables necesarias.
 
-## Tarea 12: Crear journal del agente
+## [x] Tarea 12: Crear journal del agente
 
 - Crear carpeta `.jules/` en la raíz del repo si no existe.
 - Crear archivo `.jules/convex.md` con este contenido inicial:

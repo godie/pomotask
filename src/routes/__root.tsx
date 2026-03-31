@@ -1,58 +1,45 @@
-import { createRootRoute, Link, Outlet } from '@tanstack/react-router'
-import { Timer, Layers, ListTodo, User as UserIcon, LogOut, Download } from 'lucide-react'
-import { TanStackRouterDevtools } from '@tanstack/router-devtools'
-import { useTimerStore } from '@/stores/timerStore'
-import { formatTime } from '@/lib/utils'
-import { supabase } from '@/lib/supabase'
-import { syncToSupabase } from '@/db/sync'
-import { useEffect, useState } from 'react'
-import type { User } from '@supabase/supabase-js'
-import { Dialog, DialogTrigger } from '@/components/ui/Dialog'
-import { SignInForm } from '@/components/auth/SignInForm'
-import { usePWAInstall } from '@/hooks/usePWAInstall'
-import { NotFound } from '@/components/ui/NotFound'
+import { createRootRoute, Link, Outlet } from "@tanstack/react-router";
+import { Timer, Layers, ListTodo, Download } from "lucide-react";
+import { TanStackRouterDevtools } from "@tanstack/router-devtools";
+import { useTimerStore } from "@/stores/timerStore";
+import { formatTime } from "@/lib/utils";
+import { usePWAInstall } from "@/hooks/usePWAInstall";
+import { NotFound } from "@/components/ui/NotFound";
 
 export function RootLayout() {
-  const { status, secondsLeft, mode } = useTimerStore()
-  const isRunning = status === 'running'
-  const [user, setUser] = useState<User | null>(null)
-  const [isSignInOpen, setIsSignInOpen] = useState(false)
-  const { isInstallable, install } = usePWAInstall()
-
-  useEffect(() => {
-    if (!supabase) return;
-    void supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null)
-      if (event === 'SIGNED_IN') {
-        void syncToSupabase()
-      }
-    })
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  const handleSignOut = async () => {
-    if (!supabase) return
-    await supabase.auth.signOut()
-  }
+  const { status, secondsLeft, mode } = useTimerStore();
+  const isRunning = status === "running";
+  const { isInstallable, install } = usePWAInstall();
 
   return (
     <div className="min-h-screen bg-background text-foreground font-body">
       <nav className="border-b border-outline/20 p-4 flex justify-between items-center bg-surface sticky top-0 z-50">
         <div className="flex gap-6 items-center">
-          <Link to="/" className="text-xl font-headline font-bold text-primary tracking-tight">
+          <Link
+            to="/"
+            className="text-xl font-headline font-bold text-primary tracking-tight"
+          >
             POMOTASK
           </Link>
           <div className="hidden md:flex gap-4 font-label text-sm uppercase tracking-wider">
-            <Link to="/" className="hover:text-primary transition-colors [&.active]:text-primary">Timer</Link>
-            <Link to="/projects" className="hover:text-primary transition-colors [&.active]:text-primary">Projects</Link>
-            <Link to="/tasks" className="hover:text-primary transition-colors [&.active]:text-primary">Tasks</Link>
+            <Link
+              to="/"
+              className="hover:text-primary transition-colors [&.active]:text-primary"
+            >
+              Timer
+            </Link>
+            <Link
+              to="/projects"
+              className="hover:text-primary transition-colors [&.active]:text-primary"
+            >
+              Projects
+            </Link>
+            <Link
+              to="/tasks"
+              className="hover:text-primary transition-colors [&.active]:text-primary"
+            >
+              Tasks
+            </Link>
           </div>
         </div>
 
@@ -74,36 +61,6 @@ export function RootLayout() {
               <span className="font-label text-xs font-bold text-primary">
                 {mode.toUpperCase()}: {formatTime(secondsLeft)}
               </span>
-            </div>
-          )}
-
-          {supabase && (
-            <div className="flex items-center gap-4">
-              {user ? (
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-primary">
-                    <UserIcon size={16} />
-                  </div>
-                  <button
-                    onClick={handleSignOut}
-                    className="text-on_surface_variant hover:text-error transition-colors"
-                    title="Sign Out"
-                  >
-                    <LogOut size={18} />
-                  </button>
-                </div>
-              ) : (
-                <Dialog open={isSignInOpen} onOpenChange={setIsSignInOpen}>
-                  <DialogTrigger asChild>
-                    <button
-                      className="text-xs font-label uppercase tracking-widest text-on_surface_variant hover:text-secondary transition-colors"
-                    >
-                      Sign In
-                    </button>
-                  </DialogTrigger>
-                  <SignInForm onSuccess={() => { setIsSignInOpen(false) }} />
-                </Dialog>
-              )}
             </div>
           )}
         </div>
@@ -145,10 +102,10 @@ export function RootLayout() {
       </footer>
       <TanStackRouterDevtools />
     </div>
-  )
+  );
 }
 
 export const Route = createRootRoute({
   component: RootLayout,
   notFoundComponent: NotFound,
-})
+});
