@@ -504,95 +504,26 @@ Action Plan:
 
 ---
 
-## Phase 8 — Optional Auth
+## Phase 8 — Convex Auth & Data Layer Migration
 
-### Task 8.1 — `src/lib/supabase.ts`
-
-**Status: [x]**
+**Status: [~]**
 
 Findings:
 
-- ✅ Lazy Supabase client (only init if env vars present)
-
----
-
-### Task 8.2 — Supabase tables migration SQL
-
-**Status: [x]**
-
-Findings:
-
-- ✅ Migration created in `supabase/migrations/`
+- ✅ Current app bootstrap uses Convex client in `src/main.tsx` and `src/lib/convex.ts`.
+- ✅ Convex hooks/files are present (for example `src/hooks/useConvexTasks.ts`, `convex/tasks.ts`, `convex/schema.ts`).
+- ⚠️ Legacy Supabase implementation was removed from source (`src/lib/supabase.ts`, `src/db/sync.ts`, and related auth UI/tests no longer exist).
+- ⚠️ There are unresolved merge-index conflicts in Convex migration files (`src/main.tsx`, `src/lib/convex.ts`) that should be fully resolved before final verification.
 
 Action Plan:
 
-- [x] Create migration SQL in `supabase/migrations/`
-- [x] Define projects, tasks, sessions tables
+- [x] Remove Supabase-specific references from this audit.
+- [ ] Resolve merge-index conflicts and re-verify auth/data flows end-to-end.
+- [ ] Update docs to reflect Convex-only architecture as source of truth.
 
 ---
 
-### Task 8.3 — RLS policies
-
-**Status: [x]**
-
-Findings:
-
-- ✅ RLS policies defined and verified
-
-Action Plan:
-
-- [x] Add RLS: `user_id = auth.uid()` on all tables
-
----
-
-### Task 8.4 — Sign-in UI
-
-**Status: [x]**
-
-Findings:
-
-- ✅ Magic link sign-in flow implemented
-- ✅ Verified with tests
-
-Action Plan:
-
-- [x] Implement actual sign-in UI (email magic link or OAuth)
-- [x] Add tests for sign-in flow
-
----
-
-### Task 8.5 — Sync on sign-in
-
-**Status: [x]**
-
-Findings:
-
-- ✅ syncToSupabase connected to auth events
-- ✅ Verified with tests
-
-Action Plan:
-
-- [x] Connect syncToSupabase to auth state change listener
-- [x] Add test: `syncs to Supabase when user signs in`
-
----
-
-### Task 8.7 — User avatar / sign-out in nav
-
-**Status: [x]**
-
-Findings:
-
-- ✅ Avatar and sign-out functionality implemented and tested
-
-Action Plan:
-
-- [x] Add user avatar display when logged in
-- [x] Add sign-out functionality
-
----
-
-## Phase 9 — PWA & Polish
+## Phase 9 — PWA & Polish (Updated)
 
 ### Task 9.1 — Service worker with `vite-plugin-pwa`
 
@@ -635,16 +566,18 @@ Action Plan:
 
 ### Task 9.4 — App icons
 
-**Status: [x]**
+**Status: [ ]**
 
 Findings:
 
-- ✅ Icons added to `public/icons/`
+- ⚠️ `public/manifest.json` references `/icons/icon-192.png` and `/icons/icon-512.png`.
+- ❌ `public/icons/` is currently missing in the working tree.
 
 Action Plan:
 
-- [x] Generate app icons (192px and 512px)
-- [x] Place in `public/icons/`
+- [ ] Generate app icons (192px and 512px)
+- [ ] Place files in `public/icons/`
+- [ ] Validate installability in browser after icon restore
 
 ---
 
@@ -668,39 +601,35 @@ Action Plan:
 
 ---
 
-## 📊 Summary
+## 📊 Summary (Current State)
 
-| Phase | Fully Verified [x] | Partial [~] | Missing [ ] |
-| ----- | ------------------ | ----------- | ----------- |
-| 1     | 5                  | 0           | 0           |
-| 2     | 2                  | 0           | 0           |
-| 3     | 2                  | 0           | 0           |
-| 4     | 0                  | 1           | 2           |
-| 5     | 4                  | 1           | 0           |
-| 6     | 4                  | 0           | 0           |
-| 7     | 2                  | 2           | 0           |
-| 8     | 1                  | 2           | 4           |
-| 9     | 1                  | 0           | 3           |
-| 10    | 0                  | 0           | 1           |
+- ✅ Core timer/projects/tasks features continue with passing tests.
+- ✅ Convex migration is actively integrated in frontend and backend files.
+- ⚠️ Legacy Supabase sections are deprecated and removed from this report.
+- ⚠️ PWA icon assets are currently missing from `public/icons/`.
+- ⚠️ Merge-index conflicts must be finalized before considering the branch fully verified.
 
 ---
 
-## 🚨 Critical Missing Items — RESOLVED
+## ✅ Previously Resolved Critical Items
 
 1. ✅ **TaskList.tsx** — Verified at `src/components/tasks/TaskList.tsx`
 2. ✅ **Project detail page** (`/projects/$projectId`) — IMPLEMENTED
-3. ✅ **App icons** — ADDED to `public/icons/`
-4. ✅ **Supabase migrations** — SQL CREATED
-5. ✅ **Install prompt** — PWA install IMPLEMENTED
-6. ✅ **Phase 10 (Deploy)** — CONFIGURATION VERIFIED
-7. ✅ **useTimer.ts** — VERIFIED
-8. ✅ **useProject(id)** and **useTask(id)** — VERIFIED
+3. ✅ **Install prompt** — PWA install IMPLEMENTED
+4. ✅ **Phase 10 (Deploy)** — CONFIGURATION VERIFIED
+5. ✅ **useTimer.ts** — VERIFIED
+6. ✅ **useProject(id)** and **useTask(id)** — VERIFIED
+
+## 🚧 Open Critical Items (Current)
+
+1. ❌ **PWA icons missing** — `public/manifest.json` references icon files that are not present.
+2. ⚠️ **Convex migration merge state** — resolve staged conflict entries for `src/main.tsx` and `src/lib/convex.ts`.
 
 ---
 
 ## ✅ Test Coverage Assessment
 
-- ✅ Meaningful test coverage across all modules (151 tests)
+- ✅ Meaningful test coverage across all modules (157 tests currently passing)
 - ✅ 100% of components now have comprehensive tests
 - ✅ Tests cover happy paths, edge cases, and error handling
 - ✅ Strict RED-GREEN-REFACTOR cycle followed for all new implementation
@@ -713,7 +642,6 @@ Action Plan:
 - routes/projects/$projectId.tsx — 8 tests
 - components/tasks/TaskList.tsx — 5 tests
 - components/projects/ProjectStats.tsx — 9 tests
-- components/auth/SignInForm.tsx
 
 ---
 

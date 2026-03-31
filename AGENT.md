@@ -149,7 +149,7 @@ TanStack Form — forms
 Dexie.js — IndexedDB
 Zustand — timer global state
 Tailwind CSS v4 + shadcn/ui
-Supabase — optional auth + sync
+Convex — backend (agents, tasks, real-time)
 pnpm — package manager
 ```
 

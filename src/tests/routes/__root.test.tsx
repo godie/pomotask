@@ -1,6 +1,10 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
-import { createRoute, createRouter, RouterProvider } from "@tanstack/react-router";
+import {
+  createRoute,
+  createRouter,
+  RouterProvider,
+} from "@tanstack/react-router";
 import { Route as RootRoute } from "@/routes/__root";
 import { useTimerStore } from "@/stores/timerStore";
 
@@ -8,13 +12,11 @@ vi.mock("@/stores/timerStore", () => ({
   useTimerStore: vi.fn(),
 }));
 
-vi.mock("@/lib/supabase", () => ({
-  supabase: null,
-}));
-
 // Mock router devtools to avoid issues in tests
 vi.mock("@/components/ui/ErrorBoundary", () => ({
-  ErrorBoundary: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  ErrorBoundary: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
 }));
 
 vi.mock("@tanstack/router-devtools", () => ({
@@ -25,10 +27,10 @@ describe("RootLayout", () => {
   const createMockRouter = () => {
     const rootRoute = RootRoute;
     const indexRoute = createRoute({
-        getParentRoute: () => rootRoute,
-        path: '/',
-        component: () => <div>Home</div>
-    })
+      getParentRoute: () => rootRoute,
+      path: "/",
+      component: () => <div>Home</div>,
+    });
     const routeTree = rootRoute.addChildren([indexRoute]);
     return createRouter({ routeTree });
   };
@@ -44,7 +46,7 @@ describe("RootLayout", () => {
     render(<RouterProvider router={router} />);
 
     await waitFor(() => {
-        expect(screen.getAllByText(/Timer/i)[0]).toBeInTheDocument();
+      expect(screen.getAllByText(/Timer/i)[0]).toBeInTheDocument();
     });
 
     expect(screen.getAllByText(/Projects/i)[0]).toBeInTheDocument();
@@ -67,7 +69,7 @@ describe("RootLayout", () => {
     render(<RouterProvider router={router} />);
 
     await waitFor(() => {
-        expect(screen.getByText(/FOCUS: 20:00/i)).toBeInTheDocument();
+      expect(screen.getByText(/FOCUS: 20:00/i)).toBeInTheDocument();
     });
   });
 
@@ -82,7 +84,7 @@ describe("RootLayout", () => {
     render(<RouterProvider router={router} />);
 
     // Wait a bit to ensure it doesn't appear
-    await new Promise(r => setTimeout(r, 100));
+    await new Promise((r) => setTimeout(r, 100));
     expect(screen.queryByText(/FOCUS: 25:00/i)).not.toBeInTheDocument();
   });
 });
