@@ -19,6 +19,14 @@ vi.mock("@/hooks/useProjects", () => ({
   useProjects: vi.fn(() => ({ data: [], isLoading: false })),
 }));
 
+vi.mock("@/hooks/useFocusStats", () => ({
+  useFocusStats: vi.fn(() => ({
+    streakDays: 0,
+    totalFocusedLabel: "0m",
+    isLoading: false,
+  })),
+}));
+
 // Mock TaskSelector to verify it is being used
 vi.mock("@/components/timer/TaskSelector", () => ({
   TaskSelector: vi.fn(() => (

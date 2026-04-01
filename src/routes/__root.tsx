@@ -66,7 +66,7 @@ export function RootLayout() {
         </div>
       </nav>
 
-      <main className="container mx-auto px-4 py-8 max-w-4xl mb-20 md:mb-8">
+      <main className="container mx-auto px-4 py-8 max-w-6xl mb-20 md:mb-8">
         <Outlet />
       </main>
       <footer className="md:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-outline/20 z-50 pb-safe">
