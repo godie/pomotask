@@ -19,10 +19,17 @@ vi.mock("@/hooks/useProjects", () => ({
   useProjects: vi.fn(() => ({ data: [], isLoading: false })),
 }));
 
-// Mock TaskSelector to verify it is being used
-vi.mock("@/components/timer/TaskSelector", () => ({
-  TaskSelector: vi.fn(() => (
-    <div data-testid="task-selector-mock">Task Selector Mock</div>
+vi.mock("@/hooks/useFocusStats", () => ({
+  useFocusStats: vi.fn(() => ({
+    streakDays: 0,
+    totalFocusedLabel: "0m",
+    isLoading: false,
+  })),
+}));
+
+vi.mock("@/components/home/DashboardInlineTasks", () => ({
+  DashboardInlineTasks: vi.fn(() => (
+    <div data-testid="inline-tasks-mock">Inline Tasks Mock</div>
   )),
 }));
 
@@ -41,7 +48,7 @@ describe("Home Page (Index)", () => {
     });
   });
 
-  it("renders the TaskSelector component", () => {
+  it("renders the inline tasks panel", () => {
     const Index = (Route as any).options.component;
     render(
       <QueryClientProvider client={queryClient}>
@@ -49,6 +56,6 @@ describe("Home Page (Index)", () => {
       </QueryClientProvider>,
     );
 
-    expect(screen.getByTestId("task-selector-mock")).toBeInTheDocument();
+    expect(screen.getByTestId("inline-tasks-mock")).toBeInTheDocument();
   });
 });
