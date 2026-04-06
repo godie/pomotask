@@ -1,12 +1,30 @@
-function App() {
-  return (
-    <div className="min-h-screen bg-background text-on-background p-8">
-      <h1 className="text-4xl text-primary neon-glow mb-4">Pomotask</h1>
-      <p className="text-lg opacity-80">
-        Project Setup & Database Layer Initialized.
-      </p>
-    </div>
-  )
+import { RouterProvider, createRouter } from "@tanstack/react-router";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { routeTree } from "./routeTree.gen";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { queryClient } from "@/lib/queryClient";
+
+const router = createRouter({
+  routeTree,
+  context: {
+    queryClient,
+  },
+});
+
+declare module "@tanstack/react-router" {
+  interface Register {
+    router: typeof router;
+  }
 }
 
-export default App
+function App() {
+  return (
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>
+    </ErrorBoundary>
+  );
+}
+
+export default App;

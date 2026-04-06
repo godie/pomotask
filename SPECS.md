@@ -18,7 +18,7 @@
 | Tables             | TanStack Table           | v8                                                                            |
 | Local DB           | Dexie.js (IndexedDB)     | v4                                                                            |
 | Global UI State    | Zustand                  | v4                                                                            |
-| Auth + Remote DB   | Supabase                 | v2 (optional)                                                                 |
+| Backend / Sync     | Convex                   | v2 (active)                                                                   |
 | Styling            | Tailwind CSS             | v4 (`@tailwindcss/vite`; no separate `tailwind.config.ts` unless you add one) |
 | Components         | shadcn/ui                | latest                                                                        |
 | Icons              | Lucide React             | latest                                                                        |
@@ -75,13 +75,13 @@ Pomotask/   # or your clone folder name
 │   │   ├── tasks.ts          # Task DB operations
 │   │   ├── projects.ts       # Project DB operations
 │   │   ├── sessions.ts       # PomodoroSession records
-│   │   └── sync.ts           # Supabase sync (optional, conditional — not yet)
+│   │   └── sync.ts           # Convex sync logic
 │   ├── tests/                # Vitest: setup.ts + *.test.ts
 │   ├── stores/
 │   │   └── timerStore.ts     # Zustand: active timer + active task
 │   ├── lib/
 │   │   ├── pomodoro.ts       # Business logic (split rule, calc)
-│   │   ├── supabase.ts       # Supabase client (lazy init)
+│   │   ├── convex.ts         # Convex client
 │   │   └── utils.ts          # cn(), formatTime(), etc.
 │   └── types/
 │       └── index.ts          # All shared TypeScript types
@@ -294,20 +294,16 @@ export const queryKeys = {
 
 ---
 
-## 🔐 Auth & Sync Strategy
+## 🔐 Sync Strategy (Convex)
 
 ```
-User not signed in:
-  → All reads/writes go directly to IndexedDB (Dexie)
-  → Supabase client never initialized
-
-User signs in:
-  → Pull remote data from Supabase → merge into IndexedDB
-  → All future writes go to IndexedDB AND Supabase (dual-write)
-  → On conflict: last-write-wins by updatedAt timestamp
+Data is primarily stored in IndexedDB (Dexie) for offline-first support.
+Convex acts as the primary cloud synchronization layer.
+Changes in IndexedDB are synced to Convex when a connection is available.
+Convex functions (queries/mutations) are used to maintain data consistency across devices.
 ```
 
-Supabase tables mirror the TypeScript types exactly (snake_case columns).
+Convex schema mirrors the TypeScript types (defined in `convex/schema.ts`).
 RLS policies: users can only read/write their own rows (`user_id = auth.uid()`).
 
 ---

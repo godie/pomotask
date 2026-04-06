@@ -124,11 +124,16 @@ it('shows break overlay when timer is in break mode', () => {
 ## Key rules
 
 - **TDD is mandatory** — test first, always, no exceptions
+- **NO TYPE `any` ALLOWED** — The linter is configured to block it as an error. Use:
+  - Explicit types (e.g., `string`, `number`, `MyInterface`)
+  - `unknown` for truly unknown values
+  - Generics (e.g., `Array<T>`, `Promise<Response>`)
+  - Compiler-inferred types when appropriate
+  - ❌ **NEVER** use `any` — it will fail CI
 - Do not add features not listed in `MVP_SCOPE.md`
 - Do not use any library not listed in `SPECS.md` without noting it
 - All data must persist in IndexedDB (Dexie) — this is offline-first
 - Auth is optional — the app must work 100% without it
-- TypeScript strict mode — no `any`
 - Mobile-first responsive design
 - Never commit failing tests
 
@@ -144,7 +149,7 @@ TanStack Form — forms
 Dexie.js — IndexedDB
 Zustand — timer global state
 Tailwind CSS v4 + shadcn/ui
-Supabase — optional auth + sync
+Convex — backend (agents, tasks, real-time)
 pnpm — package manager
 ```
 
@@ -172,3 +177,100 @@ pnpm — package manager
 - Split divides estimate evenly (`Math.ceil` for part 1)
 - `realPomodoros` is auto-incremented only — never manually editable by user
 - Tasks can belong to a project or be standalone (no project)
+
+---
+
+## Pre-commit and CI checks — mandatory
+
+Every commit must pass these checks locally before pushing. CI will enforce the same checks.
+
+### Local pre-commit checks
+
+The husky pre-commit hook (`.husky/pre-commit`) runs:
+
+1. **lint-staged** — runs ESLint and TypeScript check on staged `.ts`/`.tsx` files only
+2. **vitest run --coverage** — runs all tests
+
+### lint-staged configuration
+
+The current setup (`lint-staged.config.mjs`):
+
+```javascript
+export default {
+  "*.{ts,tsx}": [
+    "eslint --max-warnings 0 --fix --no-warn-ignored",
+    "bash -c 'tsc --noEmit'",
+  ],
+  "*.{json,md,yml,yaml}": ["prettier --write"],
+};
+```
+
+This means:
+
+- For `.ts`/`.tsx` files: ESLint (with fixes) + TypeScript check
+- For `.json`/`.md`/`.yml`/`.yaml`: Prettier formatting
+
+### Running checks manually
+
+If you need to run checks manually:
+
+```bash
+# lint-staged (staged files only)
+pnpm exec lint-staged
+
+# Full lint (all files)
+pnpm lint
+
+# TypeScript check (all files)
+pnpm typecheck
+
+# Tests
+pnpm test:run
+```
+
+### Rule
+
+**If any of these commands fail, do not commit.** Fix the issues first. CI will block merges that fail these checks.
+
+---
+
+## Convex integration — REQUIRED reading
+
+Read this before touching anything related to Convex. Follow these rules exactly.
+
+### Where Convex lives
+
+- **Convex backend** lives in `convex/` at repo root.
+- **Generated client** lives in `convex/_generated/`. Do not modify or move files inside `_generated/`.
+- Frontend imports the generated client from `../../convex/_generated/api`.
+- Use `pnpm` for all installs and `npx convex` commands from repo root.
+
+### Commands agents may run
+
+- `pnpm add convex` — only if adding the dependency is required.
+- `npx convex dev` — run local Convex dev server.
+- `npx convex codegen` — after any change to `convex/schema.ts`.
+
+### What agents must NOT do
+
+- Do not modify files in `convex/_generated/`.
+- Do not move the UI out of `src/`.
+- Do not implement Convex Auth in this phase. `convex/auth.config.ts` exists but is empty.
+- Do not create CLI inside this repo. CLI lives in a separate repo.
+
+### Files in `convex/`
+
+- `schema.ts` — database schema
+- `auth.config.ts` — auth configuration (empty for now)
+- `crons.ts` — scheduled tasks
+- `tasks.ts` — task mutations/queries
+- `agents.ts` — agent management
+- `logs.ts` — logging
+- `comments.ts` — comments
+- `watchdog.ts` — watchdog for monitoring
+- `_generated/` — do not touch
+
+### Context and task definitions for Convex
+
+- `convex-contexto.md` — Convex context
+- `convex-tareas.md` — Task list for Convex
