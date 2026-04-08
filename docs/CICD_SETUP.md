@@ -168,7 +168,7 @@ In your GitHub repo → Settings → Secrets and variables → Actions, add:
 
 1. Go to Cloudflare Dashboard → Workers & Pages → Create → Pages
 2. Connect your GitHub repo
-3. Set project name to `pomotask`
+3. Set project name to `pomo-task`
 4. Build settings:
    - **Build command**: `pnpm build`
    - **Build output directory**: `dist`

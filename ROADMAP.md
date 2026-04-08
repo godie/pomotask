@@ -1,7 +1,7 @@
 # 🗺️ Roadmap & Agent Tasks — Pomotask
 
 > This file is the source of truth for the AI agent implementing the project.
-> Work tasks IN ORDER. Mark each task as `[x]` when complete before moving on to the next.
+> Work tasks IN ORDER. Mark each task as `[x]` when complete before moving to the next.
 > Read `SPECS.md` and `MVP_SCOPE.md` before starting. Connect to Stitch MCP for design tokens before any UI work.
 
 ---
@@ -32,11 +32,11 @@
   pnpm create vite pomo-task --template react-ts
   cd pomo-task
   ```
-- [x] **0.2** Install all Dependencies:
+- [x] **0.2** Install all dependencies:
   ```bash
   pnpm add @tanstack/react-router @tanstack/react-query @tanstack/react-form @tanstack/react-table
   pnpm add dexie zustand
-  pnpm add convex
+  pnpm add @supabase/supabase-js
   pnpm add lucide-react
   pnpm add -D tailwindcss @tailwindcss/vite
   pnpm dlx shadcn@latest init
@@ -46,7 +46,7 @@
 - [x] **0.5** Set up Tailwind CSS v4 with Vite plugin
 - [x] **0.6** Create folder structure as defined in `SPECS.md`
 - [x] **0.7** Create `src/types/index.ts` with all TypeScript types from SPECS
-- [x] **0.8** Create `.env.example` with Convex vars
+- [x] **0.8** Create `.env.example` with Supabase vars
 - [x] **0.9** Create `README.md` (already exists — copy to project root)
 - [x] **0.10** Add PWA manifest (`public/manifest.json`) and placeholder icons
 
@@ -109,27 +109,25 @@
 
 > 🔴🟢♻️ TDD: Write hook tests using `renderHook` + a mock `QueryClient`. Mock all DB functions.
 
-- [x] **3.1** Create `src/lib/queryKeys.ts` (no tests — pure constants)
+- [ ] **3.1** Create `src/lib/queryKeys.ts` (no tests — pure constants)
 
-- [x] **3.2** 🔴🟢♻️ `src/hooks/useProjects.ts`
-  - 🔴 Write `src/tests/hooks/useProjects.test.tsx`:
+- [ ] **3.2** 🔴🟢♻️ `src/hooks/useProjects.ts`
+  - 🔴 Write `src/tests/hooks/useProjects.test.ts`:
     - `'useProjects returns all projects'`
     - `'useCreateProject calls createProject and invalidates cache'`
     - `'useDeleteProject removes project from cache optimistically'`
-    - `'useProject(id) fetches single project'`
   - 🟢 Implement hooks until GREEN
   - ♻️ Refactor
 
-- [x] **3.3** 🔴🟢♻️ `src/hooks/useTasks.ts`
-  - 🔴 Write `src/tests/hooks/useTasks.test.tsx`:
+- [ ] **3.3** 🔴🟢♻️ `src/hooks/useTasks.ts`
+  - 🔴 Write `src/tests/hooks/useTasks.test.ts`:
     - `'useTasksByProject filters tasks by projectId'`
     - `'useCreateTask triggers split dialog when estimate > 5'`
     - `'useCreateTask creates single task when estimate <= 5'`
-    - `'useTask(id) fetches single task'`
   - 🟢 Implement hooks until GREEN
   - ♻️ Refactor
 
-- [x] **3.4** Set up `QueryClient` in `src/main.tsx` with `staleTime: 1000 * 60`
+- [ ] **3.4** Set up `QueryClient` in `src/main.tsx` with `staleTime: 1000 * 60`
 
 **Commit**: `feat: TanStack Query hooks for projects and tasks (TDD)`
 
@@ -139,14 +137,14 @@
 
 > 🔴🟢♻️ TDD: Test that routes render without crashing and show correct nav state.
 
-- [x] **4.1** 🔴🟢 `src/routes/__root.tsx` — root layout
+- [ ] **4.1** 🔴🟢 `src/routes/__root.tsx` — root layout
   - 🔴 `'renders nav with Timer, Projects, Tasks links'`
   - 🔴 `'renders mini-timer bar when timer is running'`
   - 🟢 Implement layout
-- [x] **4.2** Create placeholder route files (index, projects, tasks) — no logic yet, just renders heading
-- [x] **4.3** 🔴🟢 Test: `'navigating to /projects renders ProjectsList'`
-- [x] **4.4** 🔴🟢 Test: `'navigating to unknown route renders 404'`
-- [x] **4.5** Add `<RouterProvider>` in `src/App.tsx`
+- [ ] **4.2** Create placeholder route files (index, projects, tasks) — no logic yet, just renders heading
+- [ ] **4.3** 🔴🟢 Test: `'navigating to /projects renders ProjectsList'`
+- [ ] **4.4** 🔴🟢 Test: `'navigating to unknown route renders 404'`
+- [ ] **4.5** Add `<RouterProvider>` in `src/App.tsx`
 
 > ⚠️ Connect to Stitch MCP before implementing layout — get exact nav design, colors, spacing.
 
@@ -159,26 +157,26 @@
 > ⚠️ Fetch Stitch MCP design for timer screen before coding any component.
 > 🔴🟢♻️ TDD: Test behavior and render output, not CSS classes.
 
-- [x] **5.1** 🔴🟢♻️ `TimerRing.tsx`
-  - 🔴 `'renders MM:SS format correctly'` / `'applies focus color in focus mode'` / `'applies break color in break mode'` / `'renders with correct strokeDashoffset'`
+- [ ] **5.1** 🔴🟢♻️ `TimerRing.tsx`
+  - 🔴 `'renders MM:SS format correctly'` / `'applies focus color in focus mode'` / `'applies break color in break mode'`
   - 🟢 SVG circular progress ring
   - ♻️ Animate with CSS
 
-- [x] **5.2** 🔴🟢♻️ `TimerControls.tsx`
+- [ ] **5.2** 🔴🟢♻️ `TimerControls.tsx`
   - 🔴 `'shows Start when idle'` / `'shows Pause when running'` / `'shows Resume when paused'` / `'calls start() on click'`
   - 🟢 Implement controls wired to timerStore
 
-- [x] **5.3** 🔴🟢♻️ `BreakOverlay.tsx`
+- [ ] **5.3** 🔴🟢♻️ `BreakOverlay.tsx`
   - 🔴 `'shows short break label when mode is short_break'` / `'shows long break label when mode is long_break'` / `'shows countdown'` / `'skip button calls skip()'`
   - 🟢 Implement overlay
 
-- [x] **5.4** 🔴🟢♻️ Active task selector
+- [ ] **5.4** 🔴🟢♻️ Active task selector
   - 🔴 `'shows list of pending tasks'` / `'selecting task calls setActiveTask'` / `'shows active task name when set'`
-  - 🟢 Implement `TaskSelector.tsx` (extracted from index.tsx)
+  - 🟢 Implement dropdown
 
-- [x] **5.5** Wire `src/routes/index.tsx` — compose all timer components
-- [x] **5.6** Browser notification on session end (test: `'requests notification permission on first start'`)
-- [x] **5.7** Audio beep on session end (mocked in setup.ts — test: `'plays sound on session complete'`)
+- [ ] **5.5** Wire `src/routes/index.tsx` — compose all timer components
+- [ ] **5.6** Browser notification on session end (test: `'requests notification permission on first start'`)
+- [ ] **5.7** Audio beep on session end (mocked in setup.ts — test: `'plays sound on session complete'`)
 
 **Commit**: `feat: Pomodoro timer UI and controls (TDD)`
 
@@ -189,20 +187,20 @@
 > ⚠️ Fetch Stitch MCP design for projects screens before coding.
 > 🔴🟢♻️ TDD: use `@testing-library/react` + `userEvent` for all interactions.
 
-- [x] **6.1** 🔴🟢♻️ `ProjectCard.tsx`
-  - 🔴 `'renders project name'` / `'renders pomodoro stats est vs real'` / `'delete button calls onDelete'` / `'renders actual task count'`
-  - 🟢 Implement card with `taskCount` prop
+- [ ] **6.1** 🔴🟢♻️ `ProjectCard.tsx`
+  - 🔴 `'renders project name'` / `'renders pomodoro stats est vs real'` / `'delete button calls onDelete'`
+  - 🟢 Implement card
 
-- [x] **6.2** 🔴🟢♻️ `ProjectForm.tsx`
-  - 🔴 `'submit is disabled when name is empty'` / `'calls onSubmit with form values'` / `'shows validation error on empty name'` / `'validates name max length (60 chars)'`
-  - 🟢 Implement TanStack Form with Zod validation
+- [ ] **6.2** 🔴🟢♻️ `ProjectForm.tsx`
+  - 🔴 `'submit is disabled when name is empty'` / `'calls onSubmit with form values'` / `'shows validation error on empty name'`
+  - 🟢 Implement TanStack Form
 
-- [x] **6.3** 🔴🟢♻️ `ProjectStats.tsx`
+- [ ] **6.3** 🔴🟢♻️ `ProjectStats.tsx`
   - 🔴 `'shows estimated and real pomodoro counts'` / `'shows 0/0 when no tasks'`
   - 🟢 Implement stats
 
-- [x] **6.4** 🔴🟢 Projects list page — `'shows empty state when no projects'` / `'renders project cards'`
-- [x] **6.5** 🔴🟢 Project detail page — `'shows project tasks'` / `'shows project stats'`
+- [ ] **6.4** 🔴🟢 Projects list page — `'shows empty state when no projects'` / `'renders project cards'`
+- [ ] **6.5** 🔴🟢 Project detail page — `'shows project tasks'` / `'shows project stats'`
 
 **Commit**: `feat: projects list and detail UI (TDD)`
 
@@ -213,55 +211,55 @@
 > ⚠️ Fetch Stitch MCP design for task screens before coding.
 > 🔴🟢♻️ TDD: split dialog flow is critical — test every branch.
 
-- [x] **7.1** 🔴🟢♻️ `TaskCard.tsx`
+- [ ] **7.1** 🔴🟢♻️ `TaskCard.tsx`
   - 🔴 `'renders task name and pomodoro count'` / `'shows status badge'` / `'Start button calls setActiveTask'` / `'complete button marks task done'`
   - 🟢 Implement
 
-- [x] **7.2** 🔴🟢♻️ `TaskSplitDialog.tsx`
+- [ ] **7.2** 🔴🟢♻️ `TaskSplitDialog.tsx`
   - 🔴 `'shows preview of both split tasks'` / `'confirm creates 2 tasks'` / `'cancel creates original single task'` / `'split names append Part 1 and Part 2'`
   - 🟢 Implement dialog (this is the most critical UI flow — cover all branches)
 
-- [x] **7.3** 🔴🟢♻️ `TaskForm.tsx`
-  - 🔴 `'shows split dialog when estimate > 5 on submit'` / `'does not show split dialog when estimate <= 5'` / `'project field is optional'` / `'validates name max length (60 chars)'`
-  - 🟢 Implement TanStack Form with split trigger and Zod validation
+- [ ] **7.3** 🔴🟢♻️ `TaskForm.tsx`
+  - 🔴 `'shows split dialog when estimate > 5 on submit'` / `'does not show split dialog when estimate <= 5'` / `'project field is optional'`
+  - 🟢 Implement TanStack Form with split trigger
 
-- [x] **7.4** 🔴🟢♻️ `TaskList.tsx`
+- [ ] **7.4** 🔴🟢♻️ `TaskList.tsx`
   - 🔴 `'groups tasks by status: in_progress first, then pending, then completed'` / `'filters by projectId when prop provided'`
   - 🟢 Implement
 
-- [x] **7.5** 🔴🟢 Tasks list page — `'shows all tasks'` / `'filters by selected project'`
+- [ ] **7.5** 🔴🟢 Tasks list page — `'shows all tasks'` / `'filters by selected project'`
 
 **Commit**: `feat: tasks UI with split dialog (TDD)`
 
 ---
 
-## Phase 8 — Cloud Sync (Convex)
+## Phase 8 — Optional Auth
 
-- [x] **8.1** Create `src/lib/convex.ts` — Convex client initialization
-- [x] **8.2** Create Convex schema (`convex/schema.ts`) with auth tables
-- [ ] **8.3** Implement Convex mutations and queries for projects and tasks (backend sync)
-- [ ] **8.4** Implement Convex Auth (see `docs/convex-auth-tareas.md`)
-- [ ] **8.5** Implement sync logic between IndexedDB and Convex
-- [ ] **8.6** Implement Convex watchdog and crons
-- [ ] **8.7** Integrate ConvexProvider in frontend
+- [ ] **8.1** Create `src/lib/supabase.ts` — lazy Supabase client (only init if env vars present)
+- [ ] **8.2** Create Supabase tables (migration SQL) mirroring TypeScript types
+- [ ] **8.3** Add RLS policies: `user_id = auth.uid()` on all tables
+- [ ] **8.4** Create sign-in UI (email magic link or Google OAuth)
+- [ ] **8.5** On sign-in: sync local IndexedDB data up to Supabase
+- [ ] **8.6** Implement `src/db/sync.ts` dual-write logic
+- [ ] **8.7** Add user avatar / sign-out in nav bar when logged in
 
-**Commit**: `feat: Convex backend integration`
+**Commit**: `feat: optional Supabase auth and sync`
 
 ---
 
 ## Phase 9 — PWA & Polish
 
-- [x] **9.1** Add service worker with Workbox (via `vite-plugin-pwa`)
+- [ ] **9.1** Add service worker with Workbox (via `vite-plugin-pwa`)
   ```bash
   pnpm add -D vite-plugin-pwa
   ```
-- [x] **9.2** Configure asset caching (app shell)
-- [x] **9.3** Add install prompt for mobile (PWA `beforeinstallprompt`)
-- [x] **9.4** Generate app icons (192px and 512px) based on Stitch design
-- [x] **9.5** Test on Chrome mobile (device emulation minimum)
-- [x] **9.6** Verify all routes work with direct navigation (no 404 on refresh)
-- [x] **9.7** Add loading skeletons to all async components
-- [x] **9.8** Add error boundary with friendly fallback UI
+- [ ] **9.2** Configure asset caching (app shell)
+- [ ] **9.3** Add install prompt for mobile (PWA `beforeinstallprompt`)
+- [ ] **9.4** Generate app icons (192px and 512px) based on Stitch design
+- [ ] **9.5** Test on Chrome mobile (device emulation minimum)
+- [ ] **9.6** Verify all routes work with direct navigation (no 404 on refresh)
+- [ ] **9.7** Add loading skeletons to all async components
+- [ ] **9.8** Add error boundary with friendly fallback UI
 
 **Commit**: `feat: PWA manifest, service worker, polish`
 
@@ -269,25 +267,13 @@
 
 ## Phase 10 — Deploy
 
-- [x] **10.1** Connect repo to Cloudflare Pages (or keep GitHub Actions deploy from `.github/workflows/ci.yml`)
-- [x] **10.2** Add env vars in Cloudflare: `VITE_CONVEX_URL`, `CONVEX_DEPLOY_KEY`
-- [x] **10.3** Configure SPA fallback (`/* → index.html`)
-- [x] **10.4** Deploy and smoke test production build
-- [x] **10.5** Update `README.md` with live URL
+- [ ] **10.1** Connect repo to Cloudflare Pages (or keep GitHub Actions deploy from `.github/workflows/ci.yml`)
+- [ ] **10.2** Add env vars in Cloudflare (and GitHub Actions secrets for CI): Supabase keys, `CLOUDFLARE_*`
+- [ ] **10.3** Configure SPA fallback (`/* → index.html`)
+- [ ] **10.4** Deploy and smoke test production build
+- [ ] **10.5** Update `README.md` with live URL
 
 **Commit**: `chore: deploy to cloudflare pages`
-
----
-
-## 🔧 Bug Fixes & Improvements
-
-### Fixed (2026-03-31)
-
-- **ProjectCard navigation**: Added `Link` to navigate to project detail page (was broken)
-- **ProjectForm edit mode**: Wired up edit functionality via `useUpdateProject` hook
-- **TaskForm dialog closing**: Fixed async handling when creating tasks with <= 5 pomodoros
-- **TaskStatus type**: Added `'divided'` status to `src/types/index.ts` for split tasks
-- **Home.test.tsx**: Added mocks for `useCreateTask`, `useUpdateTask`, `useSplitTask`, `useProjects`
 
 ---
 
@@ -298,13 +284,13 @@
 | 0     | Project Setup                                       | ✅     |
 | 1     | Database Layer                                      | ✅     |
 | 2     | Timer Store                                         | ✅     |
-| 3     | Query Hooks                                         | ✅     |
-| 4     | Routing & Layout                                    | ✅     |
-| 5     | Timer UI                                            | ✅     |
-| 6     | Projects UI                                         | ✅     |
-| 7     | Tasks UI                                            | ✅     |
-| 8     | Cloud Sync (Convex)                                 | 🟡     |
-| 9     | PWA & Polish                                        | ✅     |
-| 10    | Deploy (Cloudflare Pages; see `docs/CICD_SETUP.md`) | ✅     |
+| 3     | Query Hooks                                         | ⬜     |
+| 4     | Routing & Layout                                    | ⬜     |
+| 5     | Timer UI                                            | ⬜     |
+| 6     | Projects UI                                         | ⬜     |
+| 7     | Tasks UI                                            | ⬜     |
+| 8     | Auth (optional)                                     | ⬜     |
+| 9     | PWA & Polish                                        | ⬜     |
+| 10    | Deploy (Cloudflare Pages; see `docs/CICD_SETUP.md`) | ⬜     |
 
 Update status: ⬜ Not started → 🟡 In progress → ✅ Done

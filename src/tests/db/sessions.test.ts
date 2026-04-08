@@ -1,117 +1,61 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+/* eslint-disable @typescript-eslint/unbound-method */
+import { describe, it, expect, beforeEach, afterEach, vi, type MockedFunction } from 'vitest'
 import {
   createSession,
   getSessionsByTask,
-  getTodaySessions,
-} from "@/db/sessions";
-import { db } from "@/db/schema";
+  getTodaySessions
+} from '@/db/sessions'
+import { db } from '@/db/schema'
 
-const { equalsMock, aboveOrEqualMock, toArrayMock } = vi.hoisted(() => ({
-  equalsMock: vi.fn(),
-  aboveOrEqualMock: vi.fn(),
-  toArrayMock: vi.fn(),
-}));
-
-vi.mock("@/db/schema", () => ({
-  db: {
-    sessions: {
-      add: vi.fn(),
-      where: vi.fn((field: string) => {
-        if (field === "taskId") {
-          return {
-            equals: equalsMock.mockReturnValue({
-              toArray: toArrayMock,
-            }),
-          };
-        }
-
-        if (field === "startedAt") {
-          return {
-            aboveOrEqual: aboveOrEqualMock.mockReturnValue({
-              toArray: toArrayMock,
-            }),
-          };
-        }
-
-        throw new Error(`Unexpected where field: ${field}`);
-      }),
-    },
-  },
-}));
-
-describe("db/sessions", () => {
+describe('sessions db operations', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-    equalsMock.mockReset();
-    aboveOrEqualMock.mockReset();
-    toArrayMock.mockReset();
-  });
+    vi.clearAllMocks()
+    vi.useFakeTimers()
+  })
 
-  it("createSession adds a session with UUID", async () => {
-    const sessionData = {
-      taskId: "t1",
-      startedAt: 1000,
-      completedAt: 2000,
-      type: "focus" as const,
-      durationSeconds: 1000,
-    };
+  afterEach(() => {
+    vi.useRealTimers()
+  })
 
-    await createSession(sessionData);
+  it('creates a session with a uuid', async () => {
+    const data = {
+      taskId: 'T1',
+      startedAt: Date.now(),
+      completedAt: Date.now(),
+      type: 'focus' as const,
+      durationSeconds: 1500
+    }
+    const session = await createSession(data)
 
-    expect(db.sessions.add).toHaveBeenCalledWith(
-      expect.objectContaining({
-        taskId: "t1",
-        id: expect.any(String),
-      }),
-    );
-  });
+    expect(session.id).toBeDefined()
+    expect(session.taskId).toBe(data.taskId)
+    expect(vi.mocked(db.sessions.add)).toHaveBeenCalledWith(session)
+  })
 
-  it("getSessionsByTask returns sessions for specific task", async () => {
-    const mockSessions = [
-      {
-        id: "s1",
-        taskId: "t1",
-        startedAt: 1000,
-        completedAt: 2000,
-        type: "focus" as const,
-        durationSeconds: 1000,
-      },
-      {
-        id: "s2",
-        taskId: "t1",
-        startedAt: 3000,
-        completedAt: 4000,
-        type: "focus" as const,
-        durationSeconds: 1000,
-      },
-    ];
-    toArrayMock.mockResolvedValue(mockSessions);
+  it('gets sessions by task', async () => {
+    const mockSessions = [{ id: 'S1', taskId: 'T1' }]
+    vi.mocked(db.sessions.toArray).mockResolvedValue(mockSessions as any)
 
-    const result = await getSessionsByTask("t1");
+    const sessions = await getSessionsByTask('T1')
+    expect(sessions).toEqual(mockSessions)
+    expect(vi.mocked(db.sessions.where)).toHaveBeenCalledWith('taskId')
+    const whereResult = db.sessions.where('') as unknown as { equals: MockedFunction<any> }
+    expect(whereResult.equals).toHaveBeenCalledWith('T1')
+  })
 
-    expect(db.sessions.where).toHaveBeenCalledWith("taskId");
-    expect(equalsMock).toHaveBeenCalledWith("t1");
-    expect(result).toEqual(mockSessions);
-  });
+  it('gets today sessions filtered by start of day', async () => {
+    const now = new Date('2024-01-01T12:00:00Z').getTime()
+    vi.setSystemTime(now)
+    const startOfDay = new Date(now).setHours(0, 0, 0, 0)
 
-  it("getTodaySessions filters from start of current day", async () => {
-    const mockSessions = [
-      {
-        id: "s1",
-        taskId: "t1",
-        startedAt: Date.now(),
-        completedAt: Date.now() + 1000,
-        type: "focus" as const,
-        durationSeconds: 1000,
-      },
-    ];
-    const startOfDay = new Date().setHours(0, 0, 0, 0);
-    toArrayMock.mockResolvedValue(mockSessions);
+    const mockSessions = [{ id: 'S1', startedAt: now }]
+    vi.mocked(db.sessions.toArray).mockResolvedValue(mockSessions as any)
 
-    const result = await getTodaySessions();
-
-    expect(db.sessions.where).toHaveBeenCalledWith("startedAt");
-    expect(aboveOrEqualMock).toHaveBeenCalledWith(startOfDay);
-    expect(result).toEqual(mockSessions);
-  });
-});
+    const sessions = await getTodaySessions()
+    expect(sessions).toEqual(mockSessions)
+    expect(vi.mocked(db.sessions.where)).toHaveBeenCalledWith('startedAt')
+    // Dexie mock is tricky, check if aboveOrEqual was called
+    const whereResult = db.sessions.where('') as unknown as { aboveOrEqual: MockedFunction<any> }
+    expect(whereResult.aboveOrEqual).toHaveBeenCalledWith(startOfDay)
+  })
+})

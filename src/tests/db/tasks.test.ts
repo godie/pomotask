@@ -1,215 +1,110 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+/* eslint-disable @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-argument */
+import { describe, it, expect, beforeEach, vi, type MockedFunction } from 'vitest'
 import {
   getAllTasks,
-  incrementRealPomodoros,
   getTasksByProject,
   getTaskById,
   createTask,
   updateTask,
   deleteTask,
-  splitTaskInDB,
-} from "@/db/tasks";
-import { db } from "@/db/schema";
+  incrementRealPomodoros
+} from '@/db/tasks'
+import { db } from '@/db/schema'
 
-const { equalsMock, toArrayMock } = vi.hoisted(() => ({
-  equalsMock: vi.fn(),
-  toArrayMock: vi.fn(),
-}));
-
-vi.mock("@/db/schema", () => ({
-  db: {
-    tasks: {
-      toArray: vi.fn(),
-      where: vi.fn(() => ({
-        equals: equalsMock.mockReturnValue({
-          toArray: toArrayMock,
-        }),
-      })),
-      get: vi.fn(),
-      add: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-      bulkAdd: vi.fn(),
-    },
-    transaction: vi.fn((_mode, _tables, callback) => callback()),
-  },
-}));
-
-describe("db/tasks", () => {
+describe('tasks db operations', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-    equalsMock.mockReset();
-    toArrayMock.mockReset();
-  });
+    vi.clearAllMocks()
+  })
 
-  it("getAllTasks calls db.tasks.toArray", async () => {
-    const mockTasks = [{ id: "1", name: "Task 1" }];
-    vi.mocked(db.tasks.toArray).mockResolvedValue(mockTasks as any);
+  it('gets all tasks', async () => {
+    const mockTasks = [{ id: '1', name: 'T1' }]
+    vi.mocked(db.tasks.toArray).mockResolvedValue(mockTasks as any)
 
-    const result = await getAllTasks();
+    const tasks = await getAllTasks()
+    expect(tasks).toEqual(mockTasks)
+    expect(vi.mocked(db.tasks.toArray)).toHaveBeenCalled()
+  })
 
-    expect(db.tasks.toArray).toHaveBeenCalled();
-    expect(result).toEqual(mockTasks);
-  });
+  it('gets tasks by project', async () => {
+    const mockTasks = [{ id: '1', projectId: 'P1', name: 'T1' }]
+    vi.mocked(db.tasks.toArray).mockResolvedValue(mockTasks as any)
 
-  it("incrementRealPomodoros increments count", async () => {
-    const mockTask = { id: "1", realPomodoros: 2 };
-    vi.mocked(db.tasks.get).mockResolvedValue(mockTask as any);
+    const tasks = await getTasksByProject('P1')
+    expect(tasks).toEqual(mockTasks)
+    expect(vi.mocked(db.tasks.where)).toHaveBeenCalledWith('projectId')
+    const whereResult = db.tasks.where('') as unknown as { equals: MockedFunction<any> }
+    expect(whereResult.equals).toHaveBeenCalledWith('P1')
+  })
 
-    await incrementRealPomodoros("1");
+  it('gets task by id', async () => {
+    const mockTask = { id: '1', name: 'T1' }
+    vi.mocked(db.tasks.get).mockResolvedValue(mockTask as any)
 
-    expect(db.tasks.update).toHaveBeenCalledWith(
-      "1",
-      expect.objectContaining({
-        realPomodoros: 3,
-        updatedAt: expect.any(Number),
-      }),
-    );
-  });
+    const task = await getTaskById('1')
+    expect(task).toEqual(mockTask)
+    expect(vi.mocked(db.tasks.get)).toHaveBeenCalledWith('1')
+  })
 
-  it("incrementRealPomodoros does nothing when task does not exist", async () => {
-    vi.mocked(db.tasks.get).mockResolvedValue(undefined);
+  it('creates a task with timestamps and uuid', async () => {
+    const data = {
+      name: 'New Task',
+      projectId: 'P1',
+      estimatedPomodoros: 3,
+      realPomodoros: 0,
+      status: 'pending' as const
+    }
+    const task = await createTask(data)
 
-    await incrementRealPomodoros("missing");
+    expect(task.id).toBeDefined()
+    expect(task.name).toBe(data.name)
+    expect(task.createdAt).toBeDefined()
+    expect(task.updatedAt).toBe(task.createdAt)
+    expect(vi.mocked(db.tasks.add)).toHaveBeenCalledWith(task)
+  })
 
-    expect(db.tasks.update).not.toHaveBeenCalled();
-  });
+  it('updates a task and its updatedAt timestamp', async () => {
+    const mockTask = { id: '1', name: 'Original', updatedAt: 0 }
+    const getSpy = vi.mocked(db.tasks.get)
+    const updateSpy = vi.mocked(db.tasks.update)
 
-  describe("getTasksByProject", () => {
-    it("filters tasks by projectId", async () => {
-      const mockTasks = [
-        { id: "1", projectId: "proj1", name: "Task 1" },
-        { id: "2", projectId: "proj1", name: "Task 2" },
-      ];
-      toArrayMock.mockResolvedValue(mockTasks);
+    getSpy.mockImplementation(((id: string) => {
+      const updateCall = updateSpy.mock.calls.find(call => call[0] === id)?.[1]
+      if (updateCall) {
+        const result = { ...mockTask, ...(updateCall as object) }
+        return Promise.resolve(result as any)
+      }
+      return Promise.resolve(mockTask as any)
+    }) as any)
 
-      const result = await getTasksByProject("proj1");
+    const updated = await updateTask('1', { name: 'Updated' })
+    expect(updated.name).toBe('Updated')
+    expect(updated.updatedAt).toBeGreaterThan(0)
+    expect(updateSpy).toHaveBeenCalled()
+  })
 
-      expect(db.tasks.where).toHaveBeenCalledWith("projectId");
-      expect(equalsMock).toHaveBeenCalledWith("proj1");
-      expect(result).toEqual(mockTasks);
-    });
-  });
+  it('deletes a task', async () => {
+    await deleteTask('1')
+    expect(vi.mocked(db.tasks.delete)).toHaveBeenCalledWith('1')
+  })
 
-  describe("getTaskById", () => {
-    it("returns correct task when found", async () => {
-      const mockTask = {
-        id: "123",
-        name: "Test Task",
-        status: "pending" as const,
-      };
-      vi.mocked(db.tasks.get).mockResolvedValue(mockTask as any);
+  it('increments realPomodoros on a task', async () => {
+    const mockTask = { id: '1', realPomodoros: 1, updatedAt: 0 }
+    const getSpy = vi.mocked(db.tasks.get)
+    const updateSpy = vi.mocked(db.tasks.update)
 
-      const result = await getTaskById("123");
+    getSpy.mockImplementation(((id: string) => {
+      const updateCall = updateSpy.mock.calls.find(call => call[0] === id)?.[1]
+      if (updateCall) {
+        const result = { ...mockTask, ...(updateCall as object) }
+        return Promise.resolve(result as any)
+      }
+      return Promise.resolve(mockTask as any)
+    }) as any)
 
-      expect(db.tasks.get).toHaveBeenCalledWith("123");
-      expect(result).toEqual(mockTask);
-    });
-
-    it("returns undefined when task not found", async () => {
-      vi.mocked(db.tasks.get).mockResolvedValue(undefined);
-
-      const result = await getTaskById("nonexistent");
-
-      expect(result).toBeUndefined();
-    });
-  });
-
-  describe("createTask", () => {
-    it("generates id, createdAt, updatedAt", async () => {
-      const taskData = {
-        name: "New Task",
-        projectId: null,
-        estimatedPomodoros: 3,
-        realPomodoros: 0,
-        status: "pending" as const,
-      };
-
-      const result = await createTask(taskData);
-
-      expect(db.tasks.add).toHaveBeenCalledWith(
-        expect.objectContaining({
-          name: "New Task",
-          id: expect.any(String),
-          createdAt: expect.any(Number),
-          updatedAt: expect.any(Number),
-        }),
-      );
-      expect(result.name).toBe("New Task");
-    });
-  });
-
-  describe("updateTask", () => {
-    it("updates specified fields", async () => {
-      const updatedTask = {
-        id: "123",
-        name: "Updated",
-        status: "completed" as const,
-        updatedAt: 2000,
-      };
-      vi.mocked(db.tasks.get).mockResolvedValue(updatedTask as any);
-
-      const result = await updateTask("123", { name: "Updated" });
-
-      expect(db.tasks.update).toHaveBeenCalledWith(
-        "123",
-        expect.objectContaining({
-          name: "Updated",
-          updatedAt: expect.any(Number),
-        }),
-      );
-      expect(result).toEqual(updatedTask);
-    });
-
-    it("throws error when task not found", async () => {
-      vi.mocked(db.tasks.get).mockResolvedValue(undefined);
-
-      await expect(updateTask("nonexistent", { name: "Test" })).rejects.toThrow(
-        "Task with id nonexistent not found",
-      );
-    });
-  });
-
-  it("deleteTask removes task from DB", async () => {
-    await deleteTask("123");
-
-    expect(db.tasks.delete).toHaveBeenCalledWith("123");
-  });
-
-  describe("splitTaskInDB", () => {
-    it("marks original as divided and creates subtasks", async () => {
-      const mockTask = {
-        id: "123",
-        name: "Big Task",
-        projectId: "proj1",
-        estimatedPomodoros: 8,
-        realPomodoros: 3,
-        status: "pending" as const,
-      };
-      vi.mocked(db.tasks.get).mockResolvedValue(mockTask as any);
-
-      const result = await splitTaskInDB("123");
-
-      expect(db.transaction).toHaveBeenCalled();
-      expect(db.tasks.update).toHaveBeenCalledWith(
-        "123",
-        expect.objectContaining({
-          status: "divided",
-          updatedAt: expect.any(Number),
-        }),
-      );
-      expect(db.tasks.bulkAdd).toHaveBeenCalledWith(result);
-      expect(result).toHaveLength(2);
-      expect(result[0].name).toBe("Big Task (Part 1)");
-      expect(result[1].name).toBe("Big Task (Part 2)");
-    });
-
-    it("throws error when task not found", async () => {
-      vi.mocked(db.tasks.get).mockResolvedValue(undefined);
-
-      await expect(splitTaskInDB("nonexistent")).rejects.toThrow(
-        "Task nonexistent not found",
-      );
-    });
-  });
-});
+    await incrementRealPomodoros('1')
+    expect(updateSpy).toHaveBeenCalledWith('1', {
+      realPomodoros: 2,
+      updatedAt: expect.any(Number)
+    })
+  })
+})

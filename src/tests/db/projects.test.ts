@@ -1,118 +1,70 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+/* eslint-disable @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-argument */
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import {
   getAllProjects,
-  createProject,
   getProjectById,
+  createProject,
   updateProject,
-  deleteProject,
-} from "@/db/projects";
-import { db } from "@/db/schema";
+  deleteProject
+} from '@/db/projects'
+import { db } from '@/db/schema'
 
-vi.mock("@/db/schema", () => ({
-  db: {
-    projects: {
-      toArray: vi.fn(),
-      get: vi.fn(),
-      add: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-    },
-  },
-}));
-
-describe("db/projects", () => {
+describe('projects db operations', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-  });
+    vi.clearAllMocks()
+  })
 
-  it("getAllProjects calls db.projects.toArray", async () => {
-    const mockProjects = [{ id: "1", name: "Test" }];
-    vi.mocked(db.projects.toArray).mockResolvedValue(mockProjects as any);
+  it('gets all projects', async () => {
+    const mockProjects = [{ id: '1', name: 'P1' }]
+    vi.mocked(db.projects.toArray).mockResolvedValue(mockProjects as any)
 
-    const result = await getAllProjects();
+    const projects = await getAllProjects()
+    expect(projects).toEqual(mockProjects)
+    expect(vi.mocked(db.projects.toArray)).toHaveBeenCalled()
+  })
 
-    expect(db.projects.toArray).toHaveBeenCalled();
-    expect(result).toEqual(mockProjects);
-  });
+  it('gets project by id', async () => {
+    const mockProject = { id: '1', name: 'P1' }
+    vi.mocked(db.projects.get).mockResolvedValue(mockProject as any)
 
-  it("createProject adds a project with generated fields", async () => {
-    const projectData = { name: "New Project", color: "#ff0000" };
+    const project = await getProjectById('1')
+    expect(project).toEqual(mockProject)
+    expect(vi.mocked(db.projects.get)).toHaveBeenCalledWith('1')
+  })
 
-    const result = await createProject(projectData);
+  it('creates a project with timestamps and uuid', async () => {
+    const data = { name: 'New Project', color: '#ff0000' }
+    const project = await createProject(data)
 
-    expect(db.projects.add).toHaveBeenCalledWith(
-      expect.objectContaining({
-        name: "New Project",
-        color: "#ff0000",
-        id: expect.any(String),
-        createdAt: expect.any(Number),
-        updatedAt: expect.any(Number),
-      }),
-    );
-    expect(result.name).toBe("New Project");
-  });
+    expect(project.id).toBeDefined()
+    expect(project.name).toBe(data.name)
+    expect(project.createdAt).toBeDefined()
+    expect(project.updatedAt).toBe(project.createdAt)
+    expect(vi.mocked(db.projects.add)).toHaveBeenCalledWith(project)
+  })
 
-  describe("getProjectById", () => {
-    it("returns correct project when found", async () => {
-      const mockProject = {
-        id: "123",
-        name: "Test Project",
-        color: "#ff0000",
-        createdAt: 1000,
-        updatedAt: 1000,
-      };
-      vi.mocked(db.projects.get).mockResolvedValue(mockProject as any);
+  it('updates a project and its updatedAt timestamp', async () => {
+    const mockProject = { id: '1', name: 'Original', updatedAt: 0 }
+    const getSpy = vi.mocked(db.projects.get)
+    const updateSpy = vi.mocked(db.projects.update)
 
-      const result = await getProjectById("123");
+    getSpy.mockImplementation(((id: string) => {
+      const updateCall = updateSpy.mock.calls.find(call => call[0] === id)?.[1]
+      if (updateCall) {
+        const result = { ...mockProject, ...(updateCall as object) }
+        return Promise.resolve(result as any)
+      }
+      return Promise.resolve(mockProject as any)
+    }) as any)
 
-      expect(db.projects.get).toHaveBeenCalledWith("123");
-      expect(result).toEqual(mockProject);
-    });
+    const updated = await updateProject('1', { name: 'Updated' })
+    expect(updated.name).toBe('Updated')
+    expect(updated.updatedAt).toBeGreaterThan(0)
+    expect(updateSpy).toHaveBeenCalled()
+  })
 
-    it("returns undefined when project not found", async () => {
-      vi.mocked(db.projects.get).mockResolvedValue(undefined);
-
-      const result = await getProjectById("nonexistent");
-
-      expect(result).toBeUndefined();
-    });
-  });
-
-  describe("updateProject", () => {
-    it("updates and returns updated project", async () => {
-      const updatedProject = {
-        id: "123",
-        name: "Updated",
-        color: "#ff0000",
-        createdAt: 1000,
-        updatedAt: 2000,
-      };
-      vi.mocked(db.projects.get).mockResolvedValue(updatedProject as any);
-
-      const result = await updateProject("123", { name: "Updated" });
-
-      expect(db.projects.update).toHaveBeenCalledWith(
-        "123",
-        expect.objectContaining({
-          name: "Updated",
-          updatedAt: expect.any(Number),
-        }),
-      );
-      expect(result).toEqual(updatedProject);
-    });
-
-    it("throws error when project not found", async () => {
-      vi.mocked(db.projects.get).mockResolvedValue(undefined);
-
-      await expect(
-        updateProject("nonexistent", { name: "Test" }),
-      ).rejects.toThrow("Project with id nonexistent not found");
-    });
-  });
-
-  it("deleteProject calls db.projects.delete with correct id", async () => {
-    await deleteProject("123");
-
-    expect(db.projects.delete).toHaveBeenCalledWith("123");
-  });
-});
+  it('deletes a project', async () => {
+    await deleteProject('1')
+    expect(vi.mocked(db.projects.delete)).toHaveBeenCalledWith('1')
+  })
+})

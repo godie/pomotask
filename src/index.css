@@ -4,16 +4,11 @@
   --color-primary: #ff2d78;
   --color-secondary: #00ffcc;
   --color-tertiary: #ffe04a;
-  --color-error: #ff5252;
-  --color-outline: #ffffff;
   --color-background: #0a0a12;
   --color-surface: #0f0f1a;
   --color-surface-container: #141422;
-  --color-surface-container-high: #1c1c2e;
   --color-on-background: #e8e0f0;
   --color-on-surface: #e8e0f0;
-  --color-on-surface-variant: #a0a0b0;
-  --color-surface-variant: #1a1a2e;
 
   --font-headline: "Sora", sans-serif;
   --font-body: "Inter", sans-serif;
@@ -37,18 +32,6 @@ h1, h2, h3, h4, h5, h6 {
 
 .neon-glow {
   text-shadow: 0 0 8px currentColor;
-}
-
-.glow-primary {
-  text-shadow: 0 0 8px var(--color-primary);
-}
-
-.glow-secondary {
-  text-shadow: 0 0 8px var(--color-secondary);
-}
-
-.glow-tertiary {
-  text-shadow: 0 0 8px var(--color-tertiary);
 }
 
 .button-glow:hover {

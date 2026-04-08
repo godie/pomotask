@@ -13,7 +13,7 @@ Pomotask combines a focused Pomodoro timer with project and task management. Est
 - **Tasks** — Create tasks with Pomodoro estimates; auto-split if > 5 Pomodoros
 - **Estimation tracking** — See estimated vs real Pomodoros per task and project
 - **Offline-first** — Works without an account using IndexedDB
-- **Cloud Sync** — Sync your data across devices using Convex
+- **Optional Auth** — Sign up to sync across devices
 - **Mobile-ready** — Responsive PWA, installable on iOS/Android
 
 ---
@@ -24,10 +24,11 @@ Pomotask combines a focused Pomodoro timer with project and task management. Est
 | -------------------- | ------------------------ |
 | Framework            | React 18                 |
 | Routing              | TanStack Router          |
-| Server State         | TanStack Query / Convex  |
+| Server State         | TanStack Query           |
 | Client State         | Zustand                  |
 | Local DB             | IndexedDB via Dexie.js   |
-| Backend / Sync       | Convex                   |
+| Auth (optional)      | Supabase Auth            |
+| Remote DB (optional) | Supabase (PostgreSQL)    |
 | Styling              | Tailwind CSS v4          |
 | UI Components        | shadcn/ui                |
 | Forms                | TanStack Form            |
@@ -48,9 +49,6 @@ cd Pomotask
 # Install dependencies
 pnpm install
 
-# Start Convex dev server (in a separate terminal)
-npx convex dev
-
 # Dev server
 pnpm dev
 ```
@@ -64,9 +62,11 @@ pnpm test:run    # Vitest + coverage
 pnpm build       # Production bundle
 ```
 
-### Environment variables (for Convex sync)
+### Environment variables (optional — for auth + sync)
+
 ```env
-VITE_CONVEX_URL=https://your-deployment.convex.cloud
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
 If these are not set, the app runs fully offline with IndexedDB.
@@ -81,11 +81,11 @@ src/
 ├── main.tsx
 ├── index.css
 ├── db/                 # Dexie — projects, tasks, sessions
-├── lib/                # pomodoro helpers, convex client, utils
+├── hooks/              # Custom hooks (useTimer)
+├── lib/                # pomodoro helpers, supabase client, utils
 ├── stores/             # timerStore (Zustand)
 ├── tests/              # Vitest setup + unit tests
 └── types/              # Shared TypeScript types
-convex/                 # Convex backend (schema, functions, crons)
 ```
 
 TanStack Router file routes (`src/routes/`), UI components, and query hooks are added per [ROADMAP.md](./ROADMAP.md).
@@ -108,10 +108,6 @@ UI/UX designed in [Google Stitch](https://stitch.withgoogle.com/projects/6328229
 - [CI/CD & pre-commit](./docs/CICD_SETUP.md)
 
 ---
-
-## Production
-
-https://pomotask.pages.dev
 
 ## 📄 License
 

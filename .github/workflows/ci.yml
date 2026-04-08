@@ -30,12 +30,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Generate Convex types
-        run: npx convex codegen
-        env:
-          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
-          CONVEX_DEPLOYMENT: ${{ secrets.CONVEX_DEPLOYMENT }}
-
       - name: TypeScript type check
         run: pnpm typecheck
 
@@ -61,12 +55,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Generate Convex types
-        run: npx convex codegen
-        env:
-          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
-          CONVEX_DEPLOYMENT: ${{ secrets.CONVEX_DEPLOYMENT }}
-
       - name: Run tests
         run: pnpm test:run
 
@@ -78,7 +66,7 @@ jobs:
           path: coverage/
           retention-days: 7
 
-  # ─── 3. BUILD + DEPLOY CONVEX ────────────────────────────────────
+  # ─── 3. BUILD ────────────────────────────────────────────────────
   build:
     name: Build
     runs-on: ubuntu-latest
@@ -98,13 +86,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Deploy Convex backend
-        run: npx convex deploy --cmd 'npx convex codegen && pnpm build'
+      - name: Build
+        run: pnpm build
         env:
-          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
-          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
-          SITE_URL: ${{ vars.SITE_URL }}
-          VITE_CONVEX_URL: ${{ vars.VITE_CONVEX_URL }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
@@ -126,6 +112,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Wrangler installs via the repo’s package manager (pnpm-lock.yaml → pnpm must exist)
       - uses: pnpm/action-setup@v3
         with:
           version: ${{ env.PNPM_VERSION }}
@@ -133,7 +120,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "pnpm"
 
       - name: Download build
         uses: actions/download-artifact@v4
@@ -168,7 +154,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "pnpm"
 
       - name: Download build
         uses: actions/download-artifact@v4

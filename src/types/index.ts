@@ -1,4 +1,4 @@
-export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'divided'
+export type TaskStatus = 'pending' | 'in_progress' | 'completed'
 
 export interface Project {
   id: string                  // uuid

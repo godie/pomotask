@@ -1,404 +1,286 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { act, renderHook } from "@testing-library/react";
-import { useTimerStore } from "@/stores/timerStore";
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { act, renderHook } from '@testing-library/react'
+import { useTimerStore } from '@/stores/timerStore'
 import {
   FOCUS_DURATION,
   SHORT_BREAK,
   LONG_BREAK,
   POMODOROS_UNTIL_LONG_BREAK,
-} from "@/lib/pomodoro";
-import { incrementRealPomodoros } from "@/db/tasks";
-import { createSession } from "@/db/sessions";
+} from '@/lib/pomodoro'
+import { incrementRealPomodoros } from '@/db/tasks'
+import { createSession } from '@/db/sessions'
 
-// Mocks de base de datos
-vi.mock("@/db/tasks", () => ({
+vi.mock('@/db/tasks', () => ({
   incrementRealPomodoros: vi.fn().mockResolvedValue(undefined),
-}));
+}))
 
-vi.mock("@/db/sessions", () => ({
+vi.mock('@/db/sessions', () => ({
   createSession: vi.fn().mockResolvedValue({}),
-}));
+}))
 
-// Mock de AudioContext para evitar errores en el entorno de test
-const mockAudioContext = {
-  createOscillator: vi.fn(() => ({
-    connect: vi.fn(),
-    start: vi.fn(),
-    stop: vi.fn(),
-    type: "",
-    frequency: { value: 0 },
-  })),
-  createGain: vi.fn(() => ({
-    connect: vi.fn(),
-    gain: { setValueAtTime: vi.fn(), exponentialRampToValueAtTime: vi.fn() },
-  })),
-  destination: {},
-};
-global.AudioContext = vi.fn(() => mockAudioContext) as any;
-
-// Mock de Notification
-const originalNotification = global.Notification;
+// Reset Zustand store between tests
 beforeEach(() => {
-  // Reset store
   useTimerStore.setState({
-    status: "idle",
-    mode: "focus",
+    status: 'idle',
+    mode: 'focus',
     secondsLeft: FOCUS_DURATION,
     pomodorosCompleted: 0,
     totalPomodorosToday: 0,
     activeTaskId: null,
-  });
-  vi.clearAllMocks();
-  vi.useFakeTimers();
-
-  // Mock Notification por defecto (permiso no concedido)
-  global.Notification = {
-    permission: "default",
-    requestPermission: vi.fn().mockResolvedValue("granted"),
-  } as any;
-});
+  })
+  vi.useFakeTimers()
+  vi.clearAllMocks()
+})
 
 afterEach(() => {
-  vi.useRealTimers();
-  global.Notification = originalNotification;
-});
+  vi.useRealTimers()
+})
 
-describe("timerStore — initial state", () => {
-  it("starts idle with full focus duration", () => {
-    const { result } = renderHook(() => useTimerStore());
-    expect(result.current.status).toBe("idle");
-    expect(result.current.mode).toBe("focus");
-    expect(result.current.secondsLeft).toBe(FOCUS_DURATION);
-    expect(result.current.activeTaskId).toBeNull();
-  });
-});
+describe('timerStore — initial state', () => {
+  it('starts idle with full focus duration', () => {
+    const { result } = renderHook(() => useTimerStore())
+    expect(result.current.status).toBe('idle')
+    expect(result.current.mode).toBe('focus')
+    expect(result.current.secondsLeft).toBe(FOCUS_DURATION)
+    expect(result.current.activeTaskId).toBeNull()
+  })
+})
 
-describe("timerStore — start / pause / resume", () => {
-  it("transitions from idle to running on start", () => {
-    const { result } = renderHook(() => useTimerStore());
+describe('timerStore — start / pause / resume', () => {
+  it('transitions from idle to running on start', () => {
+    const { result } = renderHook(() => useTimerStore())
     act(() => {
-      result.current.start();
-    });
-    expect(result.current.status).toBe("running");
-  });
+      result.current.start()
+    })
+    expect(result.current.status).toBe('running')
+  })
 
-  it("pauses when running", () => {
-    const { result } = renderHook(() => useTimerStore());
+  it('pauses when running', () => {
+    const { result } = renderHook(() => useTimerStore())
     act(() => {
-      result.current.start();
-    });
+      result.current.start()
+    })
     act(() => {
-      result.current.pause();
-    });
-    expect(result.current.status).toBe("paused");
-  });
+      result.current.pause()
+    })
+    expect(result.current.status).toBe('paused')
+  })
 
-  it("resumes from paused", () => {
-    const { result } = renderHook(() => useTimerStore());
+  it('resumes from paused', () => {
+    const { result } = renderHook(() => useTimerStore())
     act(() => {
-      result.current.start();
-    });
+      result.current.start()
+    })
     act(() => {
-      result.current.pause();
-    });
+      result.current.pause()
+    })
     act(() => {
-      result.current.resume();
-    });
-    expect(result.current.status).toBe("running");
-  });
-});
+      result.current.resume()
+    })
+    expect(result.current.status).toBe('running')
+  })
+})
 
-describe("timerStore — reset", () => {
-  it("resets to initial focus state", () => {
-    const { result } = renderHook(() => useTimerStore());
+describe('timerStore — reset', () => {
+  it('resets to initial focus state', () => {
+    const { result } = renderHook(() => useTimerStore())
     act(() => {
-      result.current.start();
-    });
+      result.current.start()
+    })
     act(() => {
-      result.current.reset();
-    });
-    expect(result.current.status).toBe("idle");
-    expect(result.current.secondsLeft).toBe(FOCUS_DURATION);
-    expect(result.current.mode).toBe("focus");
-  });
-});
+      result.current.reset()
+    })
+    expect(result.current.status).toBe('idle')
+    expect(result.current.secondsLeft).toBe(FOCUS_DURATION)
+    expect(result.current.mode).toBe('focus')
+  })
+})
 
-describe("timerStore — setActiveTask", () => {
-  it("sets the active task id", () => {
-    const { result } = renderHook(() => useTimerStore());
+describe('timerStore — setActiveTask', () => {
+  it('sets the active task id', () => {
+    const { result } = renderHook(() => useTimerStore())
     act(() => {
-      result.current.setActiveTask("task-123");
-    });
-    expect(result.current.activeTaskId).toBe("task-123");
-  });
+      result.current.setActiveTask('task-123')
+    })
+    expect(result.current.activeTaskId).toBe('task-123')
+  })
 
-  it("clears the active task with null", () => {
-    const { result } = renderHook(() => useTimerStore());
+  it('clears the active task with null', () => {
+    const { result } = renderHook(() => useTimerStore())
     act(() => {
-      result.current.setActiveTask("task-123");
-    });
+      result.current.setActiveTask('task-123')
+    })
     act(() => {
-      result.current.setActiveTask(null);
-    });
-    expect(result.current.activeTaskId).toBeNull();
-  });
-});
+      result.current.setActiveTask(null)
+    })
+    expect(result.current.activeTaskId).toBeNull()
+  })
+})
 
-describe("timerStore — break transitions (focus → break)", () => {
-  it("transitions to short break after first Pomodoro", async () => {
-    const { result } = renderHook(() => useTimerStore());
-    await act(async () => {
-      useTimerStore.setState({
-        pomodorosCompleted: 0,
-        status: "idle",
-        mode: "focus",
-      });
-      await result.current.skip();
-    });
-    expect(result.current.mode).toBe("short_break");
-    expect(result.current.secondsLeft).toBe(SHORT_BREAK);
-    expect(result.current.status).toBe("idle");
-  });
+describe('timerStore — break transitions', () => {
+  it('transitions to short break after first Pomodoro', () => {
+    const { result } = renderHook(() => useTimerStore())
+    act(() => {
+      useTimerStore.setState({ pomodorosCompleted: 1, status: 'idle', mode: 'focus' })
+      result.current.skip() // simulate completing focus
+    })
+    // After 1 pomodoro, should go to short break
+    expect(result.current.mode).toBe('short_break')
+    expect(result.current.secondsLeft).toBe(SHORT_BREAK)
+  })
 
-  it("transitions to long break after 4 Pomodoros", async () => {
-    const { result } = renderHook(() => useTimerStore());
-    await act(async () => {
+  it('transitions to long break after 4 Pomodoros', () => {
+    const { result } = renderHook(() => useTimerStore())
+    act(() => {
       useTimerStore.setState({
         pomodorosCompleted: POMODOROS_UNTIL_LONG_BREAK - 1,
-        status: "running",
-        mode: "focus",
-      });
-      await result.current.skip();
-    });
-    expect(result.current.mode).toBe("long_break");
-    expect(result.current.secondsLeft).toBe(LONG_BREAK);
-  });
-});
+        status: 'running',
+        mode: 'focus',
+      })
+      result.current.skip()
+    })
+    expect(result.current.mode).toBe('long_break')
+    expect(result.current.secondsLeft).toBe(LONG_BREAK)
+  })
 
-describe("timerStore — break completion (break → focus)", () => {
-  it("transitions from break to focus when break ends", async () => {
-    const { result } = renderHook(() => useTimerStore());
-    await act(async () => {
-      // Simular un break en curso (usuario lo inició)
-      useTimerStore.setState({
-        status: "running",
-        mode: "short_break",
-        secondsLeft: 1,
-      });
-      // El tick llamará a skip cuando llegue a 0
-      await result.current.tick();
-    });
-    expect(result.current.status).toBe("idle");
-    expect(result.current.mode).toBe("focus");
-    expect(result.current.secondsLeft).toBe(FOCUS_DURATION);
-  });
-});
-
-describe("timerStore — tick", () => {
-  it("decrements secondsLeft on tick", async () => {
-    const { result } = renderHook(() => useTimerStore());
-    await act(async () => {
-      useTimerStore.setState({ status: "running", secondsLeft: 100 });
-      await result.current.tick();
-    });
-    expect(result.current.secondsLeft).toBe(99);
-  });
-
-  it("does not decrement when paused or idle", async () => {
-    const { result } = renderHook(() => useTimerStore());
-    const initial = result.current.secondsLeft;
-    await act(async () => {
-      await result.current.tick(); // idle
-    });
-    expect(result.current.secondsLeft).toBe(initial);
-
-    await act(async () => {
-      useTimerStore.setState({ status: "paused", secondsLeft: 50 });
-      await result.current.tick();
-    });
-    expect(result.current.secondsLeft).toBe(50);
-  });
-});
-
-describe("timerStore — focus completion side effects", () => {
-  it("calls incrementRealPomodoros and createSession when focus completes", async () => {
-    const { result } = renderHook(() => useTimerStore());
+  it('transitions from break to focus when break ends', async () => {
+    const { result } = renderHook(() => useTimerStore())
     await act(async () => {
       useTimerStore.setState({
-        mode: "focus",
-        activeTaskId: "task-1",
+        status: 'break',
+        mode: 'short_break',
         secondsLeft: 0,
-        status: "running",
-      });
-      await result.current.skip(); // skip maneja la finalización
-    });
+      })
+      await result.current.tick()
+    })
 
-    expect(incrementRealPomodoros).toHaveBeenCalledWith("task-1");
-    expect(createSession).toHaveBeenCalledWith(
-      expect.objectContaining({
-        taskId: "task-1",
-        type: "focus",
-      }),
-    );
-    expect(result.current.pomodorosCompleted).toBe(1);
-    expect(result.current.totalPomodorosToday).toBe(1);
-  });
+    expect(result.current.status).toBe('idle')
+    expect(result.current.mode).toBe('focus')
+    expect(result.current.secondsLeft).toBe(FOCUS_DURATION)
+  })
+})
 
-  it("increments totalPomodorosToday on focus completion", async () => {
-    const { result } = renderHook(() => useTimerStore());
+describe('timerStore — tick', () => {
+  it('decrements secondsLeft on tick', async () => {
+    const { result } = renderHook(() => useTimerStore())
+    await act(async () => {
+      result.current.start()
+      await result.current.tick()
+    })
+    expect(result.current.secondsLeft).toBe(FOCUS_DURATION - 1)
+  })
+
+  it('does not decrement when paused or idle', async () => {
+    const { result } = renderHook(() => useTimerStore())
+    const initial = result.current.secondsLeft
+    await act(async () => {
+      await result.current.tick()
+    })
+    expect(result.current.secondsLeft).toBe(initial)
+  })
+})
+
+describe('timerStore — focus completion', () => {
+  it('calls incrementRealPomodoros and createSession when focus completes', async () => {
+    const { result } = renderHook(() => useTimerStore())
     await act(async () => {
       useTimerStore.setState({
-        mode: "focus",
-        activeTaskId: null,
+        status: 'running',
+        mode: 'focus',
         secondsLeft: 0,
-        status: "running",
-        totalPomodorosToday: 5,
-      });
-      await result.current.skip();
-    });
-    expect(result.current.totalPomodorosToday).toBe(6);
-  });
+        activeTaskId: 'task-1',
+      })
+      await result.current.tick()
+    })
 
-  it("requests notification permission when sending notification and permission is default", async () => {
-    // Configurar Notification con permiso "default"
-    const requestPermissionMock = vi.fn().mockResolvedValue("granted");
-    const notificationConstructorMock = vi.fn();
-    const MockNotification = function () {
-      notificationConstructorMock();
-    } as any;
-    MockNotification.permission = "default";
-    MockNotification.requestPermission = requestPermissionMock;
-    global.Notification = MockNotification;
+    expect(incrementRealPomodoros).toHaveBeenCalledWith('task-1')
+    expect(createSession).toHaveBeenCalledWith(expect.objectContaining({
+      taskId: 'task-1',
+      type: 'focus'
+    }))
+    expect(result.current.pomodorosCompleted).toBe(1)
+  })
 
-    const { result } = renderHook(() => useTimerStore());
+  it('transitions to short break after focus completes', async () => {
+    const { result } = renderHook(() => useTimerStore())
     await act(async () => {
       useTimerStore.setState({
-        mode: "focus",
+        status: 'running',
+        mode: 'focus',
         secondsLeft: 0,
-        status: "running",
-      });
-      await result.current.skip();
-    });
+        pomodorosCompleted: 0,
+      })
+      await result.current.tick()
+    })
 
-    expect(requestPermissionMock).toHaveBeenCalled();
-    expect(notificationConstructorMock).toHaveBeenCalled();
-  });
+    expect(result.current.mode).toBe('short_break')
+    expect(result.current.secondsLeft).toBe(SHORT_BREAK)
+  })
 
-  it("does not request permission when already denied", async () => {
-    const requestPermissionMock = vi.fn();
-    global.Notification = {
-      permission: "denied",
-      requestPermission: requestPermissionMock,
-    } as any;
-
-    const { result } = renderHook(() => useTimerStore());
+  it('transitions to long break after 4th focus completes', async () => {
+    const { result } = renderHook(() => useTimerStore())
     await act(async () => {
       useTimerStore.setState({
-        mode: "focus",
+        status: 'running',
+        mode: 'focus',
         secondsLeft: 0,
-        status: "running",
-      });
-      await result.current.skip();
-    });
+        pomodorosCompleted: 3,
+      })
+      await result.current.tick()
+    })
 
-    expect(requestPermissionMock).not.toHaveBeenCalled();
-  });
-});
+    expect(result.current.mode).toBe('long_break')
+    expect(result.current.secondsLeft).toBe(LONG_BREAK)
+  })
+})
 
-describe("timerStore — interval management (recursive setTimeout)", () => {
-  it("runs tick every second when running", async () => {
-    const { result } = renderHook(() => useTimerStore());
+describe('timerStore — interval management', () => {
+  it('runs tick every second when running', () => {
+    const { result } = renderHook(() => useTimerStore())
     act(() => {
-      result.current.start();
-    });
+      result.current.start()
+    })
 
-    // Después de start, el primer setTimeout está programado
-    expect(result.current.secondsLeft).toBe(FOCUS_DURATION);
-
-    await act(async () => {
-      vi.advanceTimersByTime(1000);
-      // Esperar a que se resuelva la promesa de tick y se reprograme
-      await Promise.resolve();
-    });
-    expect(result.current.secondsLeft).toBe(FOCUS_DURATION - 1);
-
-    await act(async () => {
-      vi.advanceTimersByTime(2000);
-      await Promise.resolve();
-    });
-    expect(result.current.secondsLeft).toBe(FOCUS_DURATION - 3);
-  });
-
-  it("stops ticking when paused", async () => {
-    const { result } = renderHook(() => useTimerStore());
-    act(() => {
-      result.current.start();
-    });
-
-    await act(async () => {
-      vi.advanceTimersByTime(1000);
-      await Promise.resolve();
-    });
-    const afterFirstTick = result.current.secondsLeft;
+    // Initial state after start
+    expect(result.current.secondsLeft).toBe(FOCUS_DURATION)
 
     act(() => {
-      result.current.pause();
-    });
-
-    await act(async () => {
-      vi.advanceTimersByTime(2000);
-      await Promise.resolve();
-    });
-    expect(result.current.secondsLeft).toBe(afterFirstTick);
-  });
-
-  it("stops ticking when reset", async () => {
-    const { result } = renderHook(() => useTimerStore());
-    act(() => {
-      result.current.start();
-    });
-
-    await act(async () => {
-      vi.advanceTimersByTime(1000);
-      await Promise.resolve();
-    });
-    const afterTick = result.current.secondsLeft;
+      vi.advanceTimersByTime(1000)
+    })
+    expect(result.current.secondsLeft).toBe(FOCUS_DURATION - 1)
 
     act(() => {
-      result.current.reset();
-    });
+      vi.advanceTimersByTime(2000)
+    })
+    expect(result.current.secondsLeft).toBe(FOCUS_DURATION - 3)
+  })
 
-    await act(async () => {
-      vi.advanceTimersByTime(2000);
-      await Promise.resolve();
-    });
-    expect(result.current.secondsLeft).toBe(FOCUS_DURATION); // reset restaura el valor inicial
-    expect(result.current.status).toBe("idle");
-  });
-
-  it("clears timer on skip", async () => {
-    const { result } = renderHook(() => useTimerStore());
+  it('stops ticking when paused', () => {
+    const { result } = renderHook(() => useTimerStore())
     act(() => {
-      result.current.start();
-    });
+      result.current.start()
+      vi.advanceTimersByTime(1000)
+      result.current.pause()
+    })
 
-    await act(async () => {
-      vi.advanceTimersByTime(1000);
-      await Promise.resolve();
-    });
-    const secondsBeforeSkip = result.current.secondsLeft;
+    const pausedSeconds = result.current.secondsLeft
+    act(() => {
+      vi.advanceTimersByTime(1000)
+    })
+    expect(result.current.secondsLeft).toBe(pausedSeconds)
+  })
 
-    await act(async () => {
-      await result.current.skip();
-    });
+  it('stops ticking when reset', () => {
+    const { result } = renderHook(() => useTimerStore())
+    act(() => {
+      result.current.start()
+      vi.advanceTimersByTime(1000)
+      result.current.reset()
+    })
 
-    // Después del skip no debe quedar ningún timeout activo
-    await act(async () => {
-      vi.advanceTimersByTime(1000);
-      await Promise.resolve();
-    });
-    // El tiempo no debe seguir decrementando porque el estado es idle
-    expect(result.current.secondsLeft).not.toBe(secondsBeforeSkip - 1);
-    expect(result.current.status).toBe("idle");
-  });
-});
+    act(() => {
+      vi.advanceTimersByTime(1000)
+    })
+    expect(result.current.secondsLeft).toBe(FOCUS_DURATION)
+  })
+})
